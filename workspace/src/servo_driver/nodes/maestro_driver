@@ -1,0 +1,124 @@
+#! /usr/bin/env python
+import struct
+import serial
+import time
+
+import roslib
+roslib.load_manifest('servo_driver')
+import rospy
+import actionlib
+
+from servo_driver.msg import set_anglesAction
+from servo_driver.srv import set_speed, set_accel, set_speedResponse, set_accelResponse
+
+
+
+class MaestroDriver:
+
+
+	def __init__(self, device='/dev/ttyACM0'):
+
+		try:
+			self.sc = serial.Serial(device, timeout=5)
+		except SerialException, e:
+			print 'Problem opening %s: %s' (device, e)
+
+		# ROS-specific stuff
+		print 'Starting MaestroDriver server to listen for angle commands...'
+		self.action_server = actionlib.SimpleActionServer('set_angles', set_anglesAction, self.move_to_angles, False)
+		self.action_server.start()
+
+		print 'Starting set speed service...'
+		self.set_speed_service = rospy.Service('set_speed', set_speed, self.set_speed)
+		
+		print 'Starting set accel service...'
+		self.set_accel_service = rospy.Service('set_accel', set_accel, self.set_accel)
+				
+
+	def set_speed(self, speed_cmd):
+		servo_num = speed_cmd.servo_num
+		speed = speed_cmd.speed
+		print 'Setting speed %.1f for servo %i' % (speed, servo_num)
+
+		target_speed = int(speed)
+		if target_speed >= 0 and target_speed <= 255:
+			response = 'OK: speed set to %f for servo %i' % (speed, servo_num)
+			self.setTargetAccel(servo_num, target_speed)
+		else:
+			response = 'ERROR: speed should be between 0 and 255 \
+						(you requested acceleration %f)' % (target_speed)			
+		
+		return set_speedResponse(response)
+
+
+	def set_accel(self, accel_cmd):
+		servo_num = accel_cmd.servo_num
+		accel = accel_cmd.accel
+		print 'Setting acceleration %.1f for servo %i' % (accel, servo_num)
+
+		target_accel = int(accel)
+		if target_accel >= 0 and target_accel <= 255:
+			response = 'OK: acceleration set to %f for servo %i' % (accel, servo_num)
+			self.setTargetAccel(servo_num, target_accel)
+		else:
+			response = 'ERROR: acceleration should be between 0 and 255 \
+						(you requested acceleration %f)' % (target_accel)			
+
+		return set_accelResponse(response)
+
+
+	def move_to_angles(self, angles):
+		for servo_num, angle in angles:
+			print 'Moving servo %i to %.1f' % (servo_num, angle)
+			# self.setTarget(servo_num, angles)
+		# TODO: poll angles at regular intervals, provide feedback		
+		self.action_server.set_succeeded()
+
+
+	def setTarget(self, servo, position):
+		position = position * 4
+		poslo = (position & 0x7f)
+		poshi = (position >> 7) & 0x7f
+		chan = servo & 0x7f
+		data = chr(0xaa) + chr(0x0c) + chr(0x04) + chr(chan) + chr(poslo) + chr(poshi)
+		self.sc.write(data)
+		self.sc.flush()
+
+	def setTargetSpeed(self, servo, speed):
+		speedlo = (speed & 0x7f)
+		speedhi = (speed >> 7) & 0x7f
+		chan = servo & 0x7f
+		data = chr(0xaa) + chr(0x0c) + chr(0x07) + chr(chan) + chr(speedlo) + chr(speedhi)
+		self.sc.write(data)
+		self.sc.flush()
+
+	def setTargetAccel(self, servo, acceleration):
+		accello = (acceleration & 0x7f)
+		accelhi = (acceleration >> 7) & 0x7f
+		chan = servo & 0x7f
+		data = chr(0xaa) + chr(0x0c) + chr(0x09) + chr(chan) + chr(accello) + chr(accelhi)
+		self.sc.write(data)
+		self.sc.flush()
+
+	def getPosition(self, servo):
+		chan = servo & 0x7f
+		data = chr(0xaa) + chr(0x0c) + chr(0x10) + chr(chan)
+		self.sc.write(data)
+		self.sc.flush()
+		w1 = ord(self.sc.read())
+		w2 = ord(self.sc.read())
+		b = chr(w1) + chr(w2)
+		return struct.unpack('h',b)[0]/4
+
+	def getErrors(self):
+		data = chr(0xaa) + chr(0x0c) + chr(0x21)
+		self.sc.write(data)
+		w1 = ord(self.sc.read())
+		w2 = ord(self.sc.read())
+		return w1, w2
+
+
+if __name__ == '__main__':
+	rospy.init_node('maestro_driver')
+	server = MaestroDriver()
+	rospy.spin()

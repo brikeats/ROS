@@ -1,0 +1,4 @@
+uint8 servo_num
+float32 accel  # deg/s^2
+---
+string response

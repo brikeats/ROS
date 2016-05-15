@@ -1,0 +1,37 @@
+<launch>
+
+  <!-- Launch the kinect and show the rgb feed, and the colorize disparity image.
+       My kinect is mounted upside-down, so I added nodes to correct the orientation.
+       TODO: make flipping optional with the flip_ud/flip_lr arguments
+  -->  
+  <arg name="flip_ud" default="false" />
+  <arg name="flip_lr" default="false" />
+
+
+  <!-- start the kinect -->
+  <include file="$(find openni_launch)/launch/openni.launch"/>
+  
+  <!-- flip the rgb image -->
+  <node pkg="opencv_proc" type="flip_image" name="flip_image" respawn="false">
+    <remap from="image_in" to="/camera/rgb/image_raw"/>
+    <remap from="image_out" to="/flipped_image"/>
+  </node>
+
+  <!-- flip the disparity image -->
+  <node pkg="opencv_proc" type="flip_disparity_image" name="flip_disparity_image" respawn="false">
+    <remap from="image_in" to="/camera/depth/disparity"/>
+    <remap from="image_out" to="/flipped_disparity_image"/>
+  </node>
+
+  <!-- show the rgb image -->
+  <node pkg="image_view" type="image_view" name="rgb_image_view" respawn="false" output="screen">
+    <remap from="image" to="/flipped_image"/>
+   </node>
+  
+
+  <!-- show the disparity image -->
+  <node pkg="image_view" type="disparity_view" name="disparity_image_view" respawn="false" output="screen">
+    <remap from="image" to="/flipped_disparity_image"/>
+   </node>
+  
+</launch>
