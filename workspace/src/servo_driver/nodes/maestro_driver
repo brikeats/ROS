@@ -11,6 +11,15 @@ import actionlib
 from servo_driver.msg import set_anglesAction
 from servo_driver.srv import set_speed, set_accel, set_speedResponse, set_accelResponse
 
+"""
+Test out the action with :
+
+rosrun actionlib axclient.py /set_angles
+
+Remember that the maestro controller must be set to mode "USB chained" 
+for serial communication to work. This can be done through the MaestroController
+GUI.
+"""
 
 
 class MaestroDriver:
@@ -18,9 +27,10 @@ class MaestroDriver:
 
 	def __init__(self, device='/dev/ttyACM0'):
 
+		# open the device 
 		try:
 			self.sc = serial.Serial(device, timeout=5)
-		except SerialException, e:
+		except serial.SerialException, e:
 			print 'Problem opening %s: %s' (device, e)
 
 		# ROS-specific stuff
@@ -67,15 +77,23 @@ class MaestroDriver:
 		return set_accelResponse(response)
 
 
-	def move_to_angles(self, angles):
-		for servo_num, angle in angles:
-			print 'Moving servo %i to %.1f' % (servo_num, angle)
-			# self.setTarget(servo_num, angles)
+	def move_to_angles(self, angles_goal):
+		angles = angles_goal.angles
+		for servo_num, angle in enumerate(angles):
+			# TODO: convert angles to target (in [us])
+			target = int(angle)
+			if target < 1000 or target > 2000:
+				# print 'Target %i outside range 1000...2000' % target
+				continue
+			print 'Moving servo %i to target %i' % (servo_num, target)
+			self.setTarget(servo_num, target)
+			# print 'Servo', servo_num, 'set to', self.getPosition(servo_num)
 		# TODO: poll angles at regular intervals, provide feedback		
 		self.action_server.set_succeeded()
 
 
 	def setTarget(self, servo, position):
+		# print 'setting servo %i to target %i' % (servo, position)
 		position = position * 4
 		poslo = (position & 0x7f)
 		poshi = (position >> 7) & 0x7f
@@ -101,12 +119,19 @@ class MaestroDriver:
 		self.sc.flush()
 
 	def getPosition(self, servo):
+		# FIXME: this doesn't work
 		chan = servo & 0x7f
 		data = chr(0xaa) + chr(0x0c) + chr(0x10) + chr(chan)
 		self.sc.write(data)
 		self.sc.flush()
-		w1 = ord(self.sc.read())
-		w2 = ord(self.sc.read())
+		char1 = self.sc.read()
+		if char1:
+			w1 = ord(self.sc.read())
+		char2 = self.sc.read()
+		if char2:
+			w2 = ord(self.sc.read())
+		if not char1 or not char2:
+			return None
 		b = chr(w1) + chr(w2)
 		return struct.unpack('h',b)[0]/4
 
