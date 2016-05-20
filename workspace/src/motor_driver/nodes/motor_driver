@@ -1,0 +1,34 @@
+#! /usr/bin/env python
+import struct
+import serial
+import time
+
+import roslib
+roslib.load_manifest('motor_driver')
+import rospy
+from std_msgs.msg import Float32
+
+"""
+The motor node to subscribes to differential_drive's "motor_cmd", which is a Float32 message.
+
+These hook into differential_drive's pid_velocity node. One of the parameters is ticks_meter, 
+(ticks per meter, presumably) which should be calibrated.
+"""
+
+def callback(motor_cmd):
+    # rospy.loginfo(rospy.get_caller_id() + "I heard %i", data.data)
+    print 'I got %i' % motor_cmd.data
+
+
+def run_motor_driver():
+
+    rospy.init_node('motor_driver', anonymous=False)
+    rospy.Subscriber("motor_cmd", Float32, callback)
+
+    # spin() simply keeps python from exiting until this node is stopped
+    print 'Listening...'
+    rospy.spin()
+
+
+if __name__ == '__main__':
+    run_motor_driver()
