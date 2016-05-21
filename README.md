@@ -12,7 +12,8 @@ Setup up public key authentication. You're good to go when you can log on to the
 Ensure that the environmental variables `ROS_MASTER_URI` and `ROS_IP` are set as follows: 
 
 `export ROS_MASTER_URI=http://raspberrypi:11311`
-`export ROS_IP=`hostname -I`
+
+`` export ROS_IP=`hostname -I` ``
 
 I do this in my `.bashrc`. When you want to use ROS, you should run `source /opt/ros/indigo/setup.bash`. 
 
