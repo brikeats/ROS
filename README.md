@@ -4,7 +4,7 @@ My ROS packages for raspberry pi-based robots. This assumes that you have a rasp
 ## Raspberry Pi Setup
 [Create a static ip address](https://help.ubuntu.com/lts/serverguide/network-configuration.html)
 by editing ` /etc/network/interfaces`.
-Several of the devices require sudo access. Add your user to the sudo group with `sudo usermod -aG sudo <username>`.
+Several of the devices require sudo access -- you need to be able to do `sudo python` without being prompted for the password. This can be accomplished by `sudo visudo -f /etc/sudoers.d/90-cloudimg-ubuntu` and adding a line like `<your username> ALL=(ALL) NOPASSWD:ALL` to the end.
 
 ## Laptop Setup
 Add a line to `/etc/hosts` that indicates the pi's IP address, e.g., `192.168.0.104   raspberrypi`.
