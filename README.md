@@ -4,7 +4,7 @@ My ROS packages for raspberry pi-based robots. This assumes that you have a rasp
 ## Raspberry Pi Setup
 [Create a static ip address](https://help.ubuntu.com/lts/serverguide/network-configuration.html)
 by editing ` /etc/network/interfaces`.
-Clone the workspace with `git clone https://github.com/brikeats/ROS.git` and build the workspace with `cd ROS/workspace` and `catkin_make && catkin_make install`.
+From home directory, clone the workspace with `git clone https://github.com/brikeats/ROS.git` and build the workspace with `cd ROS/workspace` and `catkin_make && catkin_make install`.
 
 ## Laptop Setup
 Add a line to `/etc/hosts` that indicates the pi's IP address, e.g., `192.168.0.104   raspberrypi`.
