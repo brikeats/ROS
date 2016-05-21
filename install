@@ -5,13 +5,13 @@ ROS_VERSION="indigo"
 ### Sync up launch files
 echo -n "Copying launch files..."
 ssh raspberrypi "mkdir -p $PREFIX/launch-files"
-rsync -a launch-files raspberrypi:$PREFIX/launch-files
+rsync -a launch-files raspberrypi:$PREFIX
 echo "done."
 
 ### Sync up source/scripts
 echo -n "Copying source files..."
 ssh raspberrypi "mkdir -p $PREFIX/workspace/src"
-rsync -a workspace/src raspberrypi:$PREFIX/workspace/src
+rsync -a workspace/src raspberrypi:$PREFIX/workspace
 echo "done."
 
 ### Build the workspace
