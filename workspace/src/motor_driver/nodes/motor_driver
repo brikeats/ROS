@@ -32,7 +32,7 @@ class MotorDriver:
 		else:
 			self.motor = motors.motor2
 
-		
+		self.speed = 0
 		self.motor.enable()
 		self.motor.setSpeed(0)
 
@@ -56,10 +56,20 @@ class MotorDriver:
 
 		if self.backwards:
 			speed *= -1
-			
+		
 		rospy.loginfo('Setting motor to speed %i' % speed)
-
 		self.motor.setSpeed(speed)
+		
+		if self.speed < speed:
+			step = 1
+		else:
+			step = -1
+
+		for s in range(self.speed, speed, step):
+			self.motor.setSpeed(speed)
+			time.sleep(0.005)
+
+		self.speed = speed
 
 
 
