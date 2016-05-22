@@ -7,28 +7,63 @@ import roslib
 roslib.load_manifest('motor_driver')
 import rospy
 from std_msgs.msg import Float32
+from dual_mc33926_rpi import motors, MAX_SPEED
 
 """
 The motor node to subscribes to differential_drive's "motor_cmd", which is a Float32 message.
 
 These hook into differential_drive's pid_velocity node. One of the parameters is ticks_meter, 
 (ticks per meter, presumably) which should be calibrated.
+
+Manually send a message with "rostopic pub /motor_cmd std_msgs/Float32 <FLOAT_CMD>"
 """
 
-def callback(motor_cmd):
-    # rospy.loginfo(rospy.get_caller_id() + "I heard %i", data.data)
-    print 'I got %i' % motor_cmd.data
+class MotorDriver:
+
+	def __init__(self):
+
+		rospy.init_node('motor_driver', anonymous=False)
+		motor_num = rospy.get_param('~motor_num')
+		self.backwards = rospy.get_param('~backwards')
+		rospy.Subscriber("motor_cmd", Float32, self.callback)
+
+		if motor_num == 1:
+			self.motor = motors.motor1
+		else:
+			self.motor = motors.motor2
+
+		
+		self.motor.enable()
+		self.motor.setSpeed(0)
+
+		# spin() simply keeps python from exiting until this node is stopped
+		rospy.on_shutdown(self.shutdown)
+		rospy.spin()
 
 
-def run_motor_driver():
+	def shutdown(self):
+		self.motor.setSpeed(0)
 
-    rospy.init_node('motor_driver', anonymous=False)
-    rospy.Subscriber("motor_cmd", Float32, callback)
 
-    # spin() simply keeps python from exiting until this node is stopped
-    print 'Listening...'
-    rospy.spin()
+	def callback(self, motor_cmd):
+	    
+		if motor_cmd.data > 100:
+			speed = MAX_SPEED
+		elif motor_cmd.data < -100:
+			speed = -MAX_SPEED
+		else:
+			speed = int(round(MAX_SPEED*motor_cmd.data/100))
+
+		if self.backwards:
+			speed *= -1
+			
+		rospy.loginfo('Setting motor to speed %i' % speed)
+
+		self.motor.setSpeed(speed)
+
+
 
 
 if __name__ == '__main__':
-    run_motor_driver()
+
+	motor_driver = MotorDriver()
