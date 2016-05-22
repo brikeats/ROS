@@ -1,0 +1,19 @@
+
+<launch>
+
+
+	<node pkg="motor_driver" type="motor_driver" name="left_motor_driver">
+		<param name="motor_num" value="1" />
+		<param name="backwards" value="True" />
+		<remap from="motor_cmd" to="left"/>
+	</node>
+
+
+	<node pkg="motor_driver" type="motor_driver" name="right_motor_driver">
+		<param name="motor_num" value="2" />
+		<param name="backwards" value="False" />
+		<remap from="motor_cmd" to="right"/>
+	</node>
+
+
+</launch>
