@@ -12,7 +12,7 @@ export ROS_MASTER_URI=http://raspberrypi:11311
 export ROS_IP=`hostname -I`
 ```
 
-You will need to add this both to your user's .bashrc, as well as to root's (`/root/.bashrc`). You can then run `sudo -i` to get an sudo shell with ROS setup called. As root, source the workspace setup file, e.g., `source /home/brian/ROS/workspace/devel/setup.bash`, and then start the motor driver with `roslaunch motor_driver motor.launch`. 
+You will need to add this both to your user's .bashrc, as well as to root's (`/root/.bashrc`). You can then run `sudo -i` to get an sudo shell with ROS setup called. As root, source the workspace setup file, e.g., `source /home/brian/ROS/workspace/devel/setup.bash`, and then start the motor driver with `roslaunch motor_driver motors.launch`. 
 
 I haven't been able to figure out how to use the `sudo` command with the launch file (with or without passwordless sudo); if I can get it set up correctly with `sudo`, then I can set up passwordless sodu and I can add the node to a launch file like `<node pkg="motor_driver" type="motor_driver" name="motor_driver" launch-prefix="sudo"/>`.
 
