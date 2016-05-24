@@ -18,49 +18,61 @@ class MotorEncoder:
         self.tick_count = 0
         # yellow_pin = rospy.get_param('~yellow_pin')
         # white_pin = rospy.get_param('~white_pin')
+        # self.backwards = rospy.get_param('~backwards')
         yellow_pin = 11
-        white_pin = 15
+        white_pin = 13
         
         self.yellow_pin = yellow_pin
         self.white_pin = white_pin
 
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.yellow_pin, GPIO.IN)
-        # GPIO.setup(self.white_pin, GPIO.IN)
+        GPIO.setup(self.white_pin, GPIO.IN)
 
-        GPIO.add_event_detect(self.yellow_pin, GPIO.RISING, callback=self.yellow_rising)
-        # GPIO.add_event_detect(self.yellow_pin, GPIO.FALLING, callback=self.yellow_falling)
-        # GPIO.add_event_detect(self.white_pin, GPIO.RISING, callback=self.white_rising)
-        # GPIO.add_event_detect(self.white_pin, GPIO.FALLING, callback=self.white_falling)
+        GPIO.add_event_detect(self.yellow_pin, GPIO.BOTH, callback=self.edge_changing)
+        GPIO.add_event_detect(self.white_pin, GPIO.BOTH, callback=self.edge_changing)
+
+        # flag variables to track which channel most recently rose/fell
+        self.last_rising_pin = None
+        self.last_falling_pin = None
 
         pub = rospy.Publisher('wheel', Int16, queue_size=10)
         rospy.init_node('motor_encoder', anonymous=False)
-        rate = rospy.Rate(10) # 10hz
+        rate = rospy.Rate(4)  # hz
         
 
         while not rospy.is_shutdown():
             pub.publish(self.tick_count)
             rate.sleep()
+        
 
-    def yellow_rising(self, channel):
-        self.tick_count += 1
-        rospy.loginfo('yellow rising')
+    def edge_changing(self, pin):
+        state = GPIO.input(pin)
 
-    # def yellow_falling(self, channel):
-    #     self.tick_count += 1
-    #     rospy.loginfo('yellow falling')
+        if state :  # rising
 
-    # def white_rising(self, channel):
-    #     self.tick_count += 1
-    #     rospy.loginfo('white_rising')
+            # increment tick count
+            if pin == self.last_falling_pin:
+                self.tick_count += 1
+            else:
+                self.tick_count -= 1
 
-    # def white_falling(self, channel):
-    #     self.tick_count += 1
-    #     rospy.loginfo('white_falling')
+            self.last_rising_pin = pin
+            
+        else:  # falling
+
+            # # increment tick count
+            # if pin == self.last_rising_pin:
+            #     self.tick_count += 1
+            # else:
+            #     self.tick_count -= 1
+
+            self.last_falling_pin = pin
+
 
 
 if __name__ == '__main__':
     try:
         MotorEncoder()
     except rospy.ROSInterruptException:
-        pass
+        GPIO.cleanup()
