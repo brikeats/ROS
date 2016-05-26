@@ -1,19 +1,9 @@
 
 <launch>
 
-	<!-- 
-		* start differential_drive/pid_velocity for each wheel
-			- put in namspace left_wheel
-			- set ~out_min:=-100 and out_max:=100
-			- remap its output topic "motor_cmd" to the "motor_effort" for each wheel
-			- ticks_meter is ???
-			- tweak ~Kp, ~Ki, ~Kd so it works well and is responsive
-		* 
-	-->
-
-	<arg name="Kp" default="2"/>
-	<arg name="Ki" default="0"/>
-	<arg name="Kd" default="0"/>
+	<arg name="Kp" default="10"/>
+	<arg name="Ki" default="10"/>
+	<arg name="Kd" default="0.01"/>
 
 	<group ns="left_wheel">
 
@@ -32,6 +22,9 @@
 			<param name="Kd" value="$(arg Kd)" />
 			<param name="out_min" value="-100" />
 			<param name="out_max" value="100" />
+			<param name="timeout_ticks" value="100000" />
+			
+			<!--If no wheel_vtarget messages are received in timeout_ticks / rate seconds the wheels are stopped. -->
 			<remap from="motor_cmd" to="motor_effort"/>
 		</node>
 		
