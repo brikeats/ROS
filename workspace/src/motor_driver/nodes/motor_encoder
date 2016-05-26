@@ -1,8 +1,15 @@
 #!/usr/bin/env python
+#! /usr/bin/env python
+import struct
+import serial
+import time
 
+import roslib
+roslib.load_manifest('motor_driver')
 import rospy
 from std_msgs.msg import Int16
 import RPi.GPIO as GPIO
+
 
 """
 The encoder node publishes a Int16 message "wheel", the tick count.
@@ -11,16 +18,22 @@ These hook into differential_drive's pid_velocity node. One of the parameters is
 (ticks per meter, presumably) which should be calibrated.S
 """
 
+
 class MotorEncoder:
 
     def __init__(self):
 
+        rospy.init_node('motor_encoder', anonymous=False)
+        pub = rospy.Publisher('tick_count', Int16, queue_size=10)
+        rate = rospy.Rate(4)  # hz
+        
+        self.backwards = rospy.get_param('~backwards')
+        white_pin = rospy.get_param('~white_pin')
+        yellow_pin = rospy.get_param('~yellow_pin')
+        
         self.tick_count = 0
-        # yellow_pin = rospy.get_param('~yellow_pin')
-        # white_pin = rospy.get_param('~white_pin')
-        # self.backwards = rospy.get_param('~backwards')
-        yellow_pin = 11
-        white_pin = 13
+        # yellow_pin = 11
+        # white_pin = 13
         
         self.yellow_pin = yellow_pin
         self.white_pin = white_pin
@@ -36,13 +49,10 @@ class MotorEncoder:
         self.last_rising_pin = None
         self.last_falling_pin = None
 
-        pub = rospy.Publisher('wheel', Int16, queue_size=10)
-        rospy.init_node('motor_encoder', anonymous=False)
-        rate = rospy.Rate(4)  # hz
         
 
         while not rospy.is_shutdown():
-            pub.publish(self.tick_count)
+            pub.publish(Int16(data=self.tick_count))
             rate.sleep()
         
 
