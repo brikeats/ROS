@@ -1,0 +1,23 @@
+
+<launch>
+
+	<!-- 
+		this will start two motor driver nodes and listen for topcis
+		/left and /right, each Float32 from -100...100 
+	-->
+
+	<include file="$(find motor_driver)/launch/motor.launch" ns='left_wheel'>
+		<arg name="motor_num" value="1" />
+		<arg name="backwards" value="True" />
+		<arg name="white_pin" value="13" />
+		<arg name="yellow_pin" value="11" />
+	</include>
+
+	<include file="$(find motor_driver)/launch/motor.launch" ns='right_wheel'>
+		<arg name="motor_num" value="2" />
+		<arg name="backwards" value="False" />
+		<arg name="white_pin" value="15" />
+		<arg name="yellow_pin" value="18" />
+	</include>
+
+</launch>

@@ -1,25 +1,25 @@
 <launch>
 
 	<!--
-	This must include 4 parameters:  motor_num, white_pin, yellow_pin, and backwards.
-	Generally will want to remap both the input topic (the motor velocity command) and
-	the output topic (the encoder output). 
-
-	Also include calib data: ticks per revolution, wheel diameter
-
-	On my current setup, left is motor 1 and backwards. right is motor 2 and forward
+	With my current setup, left is motor 1 and backwards. right is motor 2 and forward
 	-->
-
+	
+	<arg name="motor_num" default="1" />
+	<arg name="backwards" default="True" />
+	<arg name="white_pin" default="13" />
+	<arg name="yellow_pin" default="11" />
+	
+	<!-- encoder -->
 	<node pkg="motor_driver" type="motor_encoder" name="motor_encoder">
-		<param name="white_pin" value="13" />
-		<param name="yellow_pin" value="11" />
-		<param name="backwards" value="True" />
+		<param name="white_pin" value="$(arg white_pin)" />
+		<param name="yellow_pin" value="$(arg yellow_pin)" />
+		<param name="backwards" value="$(arg backwards)" />
 	</node>
 
-	
+	<!-- driver -->
 	<node pkg="motor_driver" type="motor_driver" name="motor_driver">
-		<param name="motor_num" value="1" />
-		<param name="backwards" value="True" />
+		<param name="motor_num" value="$(arg motor_num)" />
+		<param name="backwards" value="$(arg backwards)" />
 	</node>	
 
 </launch>
