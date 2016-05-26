@@ -2,22 +2,61 @@
 <launch>
 
 	<!-- 
-		this will start two motor driver nodes and listen for topcis
-		/left and /right, each Float32 from -100...100 
+		* start differential_drive/pid_velocity for each wheel
+			- put in namspace left_wheel
+			- set ~out_min:=-100 and out_max:=100
+			- remap its output topic "motor_cmd" to the "motor_effort" for each wheel
+			- ticks_meter is ???
+			- tweak ~Kp, ~Ki, ~Kd so it works well and is responsive
+		* 
 	-->
 
-	<include file="$(find motor_driver)/launch/motor.launch" ns='left_wheel'>
-		<arg name="motor_num" value="1" />
-		<arg name="backwards" value="True" />
-		<arg name="white_pin" value="13" />
-		<arg name="yellow_pin" value="11" />
-	</include>
+	<arg name="Kp" default="2"/>
+	<arg name="Ki" default="0"/>
+	<arg name="Kd" default="0"/>
 
-	<include file="$(find motor_driver)/launch/motor.launch" ns='right_wheel'>
-		<arg name="motor_num" value="2" />
-		<arg name="backwards" value="False" />
-		<arg name="white_pin" value="15" />
-		<arg name="yellow_pin" value="18" />
-	</include>
+	<group ns="left_wheel">
+
+		<!-- Motor driver -->
+		<include file="$(find motor_driver)/launch/motor.launch">
+			<arg name="motor_num" value="1" />
+			<arg name="backwards" value="True" />
+			<arg name="white_pin" value="13" />
+			<arg name="yellow_pin" value="11" />
+		</include>
+
+		<!-- PID controller -->
+		<node pkg="differential-drive" type="pid_velocity.py" name="motor_controller">
+			<param name="Kp" value="$(arg Kp)" />
+			<param name="Ki" value="$(arg Ki)" />
+			<param name="Kd" value="$(arg Kd)" />
+			<param name="out_min" value="-100" />
+			<param name="out_max" value="100" />
+			<remap from="motor_cmd" to="motor_effort"/>
+		</node>
+		
+
+	</group>
+
+
+	<group ns="right_wheel">
+	
+		<include file="$(find motor_driver)/launch/motor.launch">
+			<arg name="motor_num" value="2" />
+			<arg name="backwards" value="False" />
+			<arg name="white_pin" value="1" />
+			<arg name="yellow_pin" value="4" />
+		</include>
+
+		<node pkg="differential-drive" type="pid_velocity.py" name="motor_controller">
+			<param name="Kp" value="$(arg Kp)" />
+			<param name="Ki" value="$(arg Ki)" />
+			<param name="Kd" value="$(arg Kd)" />
+			<param name="out_min" value="-100" />
+			<param name="out_max" value="100" />
+			<remap from="motor_cmd" to="motor_effort"/>
+		</node>
+
+	</group>
 
 </launch>

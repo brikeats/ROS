@@ -23,54 +23,54 @@ class MotorDriver:
 	def __init__(self):
 
 		rospy.init_node('motor_driver', anonymous=False)
-		motor_num = rospy.get_param('~motor_num')
-		self.backwards = rospy.get_param('~backwards')
-		rospy.Subscriber("motor_cmd", Float32, self.callback)
+
+		# get parameters
+		if rospy.has_param('~motor_num'):
+			motor_num = rospy.get_param('~motor_num')
+		else:
+			motor_num = 1
+		if rospy.has_param('~backwards'):
+			self.backwards = rospy.get_param('~backwards')
+		else:
+			self.backwards = False
+
+		# listen for commands
+		rospy.Subscriber("motor_effort", Float32, self.change_speed)
 
 		if motor_num == 1:
 			self.motor = motors.motor1
 		else:
 			self.motor = motors.motor2
 
-		self.speed = 0
+		# not sure why, this seems to be the effective limit
+		self.max_speed = int(round(0.8*MAX_SPEED))
+		
 		self.motor.enable()
 		self.motor.setSpeed(0)
 
-		# spin() simply keeps python from exiting until this node is stopped
 		rospy.on_shutdown(self.shutdown)
 		rospy.spin()
 
 
-	def shutdown(self):
-		self.motor.setSpeed(0)
-
-
-	def callback(self, motor_cmd):
+	def change_speed(self, motor_cmd):
 	    
 		if motor_cmd.data > 100:
-			speed = MAX_SPEED
+			speed = self.max_speed
 		elif motor_cmd.data < -100:
-			speed = -MAX_SPEED
+			speed = -self.max_speed
 		else:
-			speed = int(round(MAX_SPEED*motor_cmd.data/100))
+			speed = int(round(self.max_speed*motor_cmd.data/100))
 
 		if self.backwards:
 			speed *= -1
 		
-		rospy.loginfo('Setting motor to speed %i' % speed)
+		# rospy.loginfo('Setting motor to speed %i' % speed)
 		self.motor.setSpeed(speed)
 		
-		if self.speed < speed:
-			step = 1
-		else:
-			step = -1
 
-		for s in range(self.speed, speed, step):
-			self.motor.setSpeed(speed)
-			time.sleep(0.005)
-
-		self.speed = speed
-
+	def shutdown(self):
+		self.motor.setSpeed(0)
+		self.motor.disable()
 
 
 
