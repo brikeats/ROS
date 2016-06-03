@@ -1,0 +1,133 @@
+#!/usr/bin/env python
+
+import roslib
+roslib.load_manifest('opencv_proc')
+import sys
+import rospy
+import cv2
+import numpy as np
+
+from std_msgs.msg import String
+from sensor_msgs.msg import Image, CameraInfo
+from ar_track_alvar_msgs.msg import AlvarMarkers
+from cv_bridge import CvBridge, CvBridgeError
+from image_geometry import PinholeCameraModel
+
+
+def normalize(v, tolerance=0.00001):
+    mag2 = sum(n * n for n in v)
+    if abs(mag2 - 1.0) > tolerance:
+        mag = sqrt(mag2)
+        v = tuple(n / mag for n in v)
+    return v
+
+
+def q_mult(q1, q2):
+    w1, x1, y1, z1 = q1
+    w2, x2, y2, z2 = q2
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2
+    z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2
+    return w, x, y, z
+
+def q_conjugate(q):
+    w, x, y, z = q
+    return (w, -x, -y, -z)
+
+
+def qv_mult(q1, v1):
+    q2 = (0.0,) + v1
+    return q_mult(q_mult(q1, q2), q_conjugate(q1))[1:]
+
+
+class MarkerDisplayer:
+
+    def __init__(self):
+
+        out_topic = '/image_out'
+        self.image_pub = rospy.Publisher(out_topic, Image, queue_size=5)
+
+        in_topic = '/image_in'
+        camera_info_topic = '/camera_info'
+        marker_topic = '/marker'
+        self.image_sub = rospy.Subscriber(in_topic, Image, self.on_frame)
+        self.camera_info_sub = rospy.Subscriber(camera_info_topic, CameraInfo, self.on_camera_info)
+        self.marker_sub = rospy.Subscriber(marker_topic, AlvarMarkers, self.on_marker)
+
+        if rospy.has_param('~marker_size'):
+            self.marker_size = rospy.get_param('~marker_size')
+        else:
+            self.marker_size = 0.024
+        dx = self.marker_size / 2
+        self.marker_pts = [(-dx,dx,0), (dx,dx,0), (dx,-dx,0), (-dx,-dx,0)]
+        self.marker_lost = True
+
+        self.bridge = CvBridge()
+        self.position = None
+        self.orientation = None
+        self.pinhole = None
+
+        
+
+
+    def on_camera_info(self, camera_info_msg):
+        self.pinhole = PinholeCameraModel()
+        self.pinhole.fromCameraInfo(camera_info_msg)
+        self.camera_info_sub.unregister()
+
+
+    def on_frame(self, img_msg):
+
+        # decode bgr image into a numpy array
+        try:
+            image = self.bridge.imgmsg_to_cv2(img_msg, "bgr8")
+        except CvBridgeError as e:
+            print(e)
+            return
+
+        # transform image
+        if self.pinhole and not self.marker_lost:
+            self.draw_marker(image)
+
+        # encode transformed bgr image into ROS message
+        try:
+            self.image_pub.publish(self.bridge.cv2_to_imgmsg(image, "bgr8"))
+        except CvBridgeError as e:
+            print(e)
+
+
+    def draw_marker(self, image):
+        x, y = self.pinhole.project3dToPixel(self.position)
+        x, y = int(round(x)), int(round(y))
+        cv2.circle(image, (x,y), radius=5, color=(0,0,255), thickness=-1)  # negative thickness => filled circle
+
+        for pt in self.marker_pts:
+            new_pt = qv_mult(self.quaternion, pt)
+            new_pt = list(r0 + dr for r0, dr in zip(self.position, new_pt))
+            x, y = self.pinhole.project3dToPixel(tuple(new_pt))
+            x, y = int(round(x)), int(round(y))
+            cv2.circle(image, (x,y), radius=5, color=(0,0,255), thickness=-1)  # negative thickness => filled circle
+            
+
+    def on_marker(self, marker_msg):
+        if len(marker_msg.markers) == 0:
+            self.marker_lost = True
+        else:
+            self.marker_lost = False
+            for marker_num, marker in enumerate(marker_msg.markers):
+                position = marker.pose.pose.position
+                orientation = marker.pose.pose.orientation
+                self.position = (position.x, position.y, position.z)
+                self.quaternion = (orientation.w, orientation.x, orientation.y, orientation.z)
+                break  # TODO: make it work with multiple markers
+
+
+
+if __name__ == '__main__':
+    rospy.init_node('marker_on_image')
+    image_converter = MarkerDisplayer()
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print("Shutting down")

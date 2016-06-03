@@ -1,8 +1,13 @@
-<launch>
+ 	<launch>
 
 	<node name="webcam" pkg="uvc_camera" type="uvc_camera_node" />
 
-	<arg name="marker_size" default="4.4" />
+	<!-- image_proc node to rectify image -->
+    <node pkg="image_proc" type="image_proc" name="image_proc_node" output="screen" />
+
+
+	<!-- The AR package does rectification, so can pass raw image frames -->
+    <arg name="marker_size" default="4.4" />
 	<arg name="max_new_marker_error" default="0.08" />
 	<arg name="max_track_error" default="0.2" />
 	<arg name="cam_image_topic" default="/image_raw" />
@@ -10,5 +15,13 @@
 	<arg name="output_frame" default="/camera" />
 
 	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)" />
+
+	
+	<node name="marker_on_image" pkg="marker_viz" type="marker_on_image">
+		<remap from="image_in" to="/image_rect_color" />
+		<remap from="image_out" to="/marker_image" />
+		<remap from="marker" to="/ar_pose_marker" />
+	</node>
+
 
 </launch>
