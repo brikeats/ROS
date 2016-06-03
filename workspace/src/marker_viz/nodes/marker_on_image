@@ -102,13 +102,24 @@ class MarkerDisplayer:
         x, y = int(round(x)), int(round(y))
         cv2.circle(image, (x,y), radius=5, color=(0,0,255), thickness=-1)  # negative thickness => filled circle
 
-        for pt in self.marker_pts:
-            new_pt = qv_mult(self.quaternion, pt)
-            new_pt = list(r0 + dr for r0, dr in zip(self.position, new_pt))
-            x, y = self.pinhole.project3dToPixel(tuple(new_pt))
-            x, y = int(round(x)), int(round(y))
-            cv2.circle(image, (x,y), radius=5, color=(0,0,255), thickness=-1)  # negative thickness => filled circle
-            
+        # rotate
+        rot_pts = [qv_mult(self.quaternion, pt) for pt in self.marker_pts]
+
+        # translate
+        dx, dy, dz = self.position
+        trans_pts = [(x+dx,y+dy,z+dz) for x,y,z in rot_pts]
+
+        # project
+        im_pts = [self.pinhole.project3dToPixel(pt) for pt in trans_pts]
+        im_pts = [map(round, pt) for pt in im_pts]
+        im_pts = [map(int, pt) for pt in im_pts]
+
+        # draw
+        for pt1, pt2 in zip(im_pts[:-1], im_pts[1:]):
+            cv2.line(image, tuple(pt1), tuple(pt2), color=(0,0,255), thickness=3)
+        pt1, pt2 = im_pts[-1], im_pts[0]
+        cv2.line(image, tuple(pt1), tuple(pt2), color=(0,0,255), thickness=3)
+
 
     def on_marker(self, marker_msg):
         if len(marker_msg.markers) == 0:
