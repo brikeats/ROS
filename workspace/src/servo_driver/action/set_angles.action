@@ -1,9 +1,0 @@
-# goal
-float32[6] angles
-
----
-# result
-
----
-# progress
-float32[6] angles

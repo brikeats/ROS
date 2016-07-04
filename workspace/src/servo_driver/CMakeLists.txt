@@ -62,7 +62,7 @@ add_service_files(
 ## Generate actions in the 'action' folder
 add_action_files(
   FILES
-  set_angles.action
+  set_angle.action
 )
 
 ## Generate added messages and services with any dependencies listed here

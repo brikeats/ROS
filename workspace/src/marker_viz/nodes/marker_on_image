@@ -56,9 +56,9 @@ class MarkerDisplayer:
         self.marker_sub = rospy.Subscriber(marker_topic, AlvarMarkers, self.on_marker)
 
         if rospy.has_param('~marker_size'):
-            self.marker_size = rospy.get_param('~marker_size')
+            self.marker_size = rospy.get_param('~marker_size')/100  
         else:
-            self.marker_size = 0.024
+            self.marker_size = 0.025
         dx = self.marker_size / 2
         self.marker_pts = [(-dx,dx,0), (dx,dx,0), (dx,-dx,0), (-dx,-dx,0)]
         self.marker_lost = True
@@ -68,14 +68,27 @@ class MarkerDisplayer:
         self.orientation = None
         self.pinhole = None
 
-        
-
 
     def on_camera_info(self, camera_info_msg):
         self.pinhole = PinholeCameraModel()
         self.pinhole.fromCameraInfo(camera_info_msg)
         self.camera_info_sub.unregister()
 
+
+    def on_marker(self, marker_msg):
+        if len(marker_msg.markers) == 0:
+            self.marker_lost = True
+        else:
+            #rospy.loginfo("marker_on_image got marker!")
+            self.marker_lost = False
+            for marker_num, marker in enumerate(marker_msg.markers):
+                position = marker.pose.pose.position
+                orientation = marker.pose.pose.orientation
+                self.position = (position.x, position.y, position.z)
+                self.quaternion = (orientation.w, orientation.x, orientation.y, orientation.z)
+                # rospy.loginfo('position (%.f, %.f, %.f)' % (100*position.x, 100*position.y, 100*position.z))
+                break  # TODO: make it work with multiple markers
+    
 
     def on_frame(self, img_msg):
 
@@ -98,9 +111,9 @@ class MarkerDisplayer:
 
 
     def draw_marker(self, image):
-        x, y = self.pinhole.project3dToPixel(self.position)
-        x, y = int(round(x)), int(round(y))
-        cv2.circle(image, (x,y), radius=5, color=(0,0,255), thickness=-1)  # negative thickness => filled circle
+        # x, y = self.pinhole.project3dToPixel(self.position)
+        # x, y = int(round(x)), int(round(y))
+        # cv2.circle(image, (x,y), radius=5, color=(0,0,255), thickness=-1)  # negative thickness => filled circle
 
         # rotate
         rot_pts = [qv_mult(self.quaternion, pt) for pt in self.marker_pts]
@@ -114,24 +127,17 @@ class MarkerDisplayer:
         im_pts = [map(round, pt) for pt in im_pts]
         im_pts = [map(int, pt) for pt in im_pts]
 
+        # # rospy.loginfo("drawing square around %i, %i" % (im_pts[0][0], im_pts[0][1]))
+        # rospy.loginfo("Drawing on frame!")
+
         # draw
         for pt1, pt2 in zip(im_pts[:-1], im_pts[1:]):
+            # rospy.loginfo("line from (%i, %i) to (%i, %i)" % (pt1[0], pt1[1], pt2[0], pt2[1]))
             cv2.line(image, tuple(pt1), tuple(pt2), color=(0,0,255), thickness=3)
         pt1, pt2 = im_pts[-1], im_pts[0]
         cv2.line(image, tuple(pt1), tuple(pt2), color=(0,0,255), thickness=3)
 
 
-    def on_marker(self, marker_msg):
-        if len(marker_msg.markers) == 0:
-            self.marker_lost = True
-        else:
-            self.marker_lost = False
-            for marker_num, marker in enumerate(marker_msg.markers):
-                position = marker.pose.pose.position
-                orientation = marker.pose.pose.orientation
-                self.position = (position.x, position.y, position.z)
-                self.quaternion = (orientation.w, orientation.x, orientation.y, orientation.z)
-                break  # TODO: make it work with multiple markers
 
 
 

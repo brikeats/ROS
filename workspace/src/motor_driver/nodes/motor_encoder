@@ -25,15 +25,13 @@ class MotorEncoder:
 
         rospy.init_node('motor_encoder', anonymous=False)
         pub = rospy.Publisher('tick_count', Int16, queue_size=10)
-        rate = rospy.Rate(4)  # hz
+        rate = rospy.Rate(40)  # hz
         
         self.backwards = rospy.get_param('~backwards')
         white_pin = rospy.get_param('~white_pin')
         yellow_pin = rospy.get_param('~yellow_pin')
-        
+
         self.tick_count = 0
-        # yellow_pin = 11
-        # white_pin = 13
         
         self.yellow_pin = yellow_pin
         self.white_pin = white_pin

@@ -1,6 +1,6 @@
 #!/bin/bash
 PREFIX="/home/brian/ROS"
-ROS_VERSION="indigo"
+#ROS_DISTRO=indigo
 
 ### Sync up launch files
 echo -n "Copying launch files..."
@@ -16,5 +16,5 @@ echo "done."
 
 ### Build the workspace
 echo "Building the workspace on the raspberry pi"
-ssh raspberrypi "source /opt/ros/$ROS_VERSION/setup.bash; cd $PREFIX/workspace; catkin_make; catkin_make install"
+ssh raspberrypi "source /opt/ros/$ROS_DISTRO/setup.bash; cd $PREFIX/workspace; catkin_make; catkin_make install"
 echo "Workspace succesfully installed."

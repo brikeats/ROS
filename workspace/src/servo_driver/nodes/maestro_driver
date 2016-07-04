@@ -8,7 +8,7 @@ roslib.load_manifest('servo_driver')
 import rospy
 import actionlib
 
-from servo_driver.msg import set_anglesAction
+from servo_driver.msg import set_angleAction
 from servo_driver.srv import set_speed, set_accel, set_speedResponse, set_accelResponse
 
 """
@@ -33,9 +33,11 @@ class MaestroDriver:
 		except serial.SerialException, e:
 			print 'Problem opening %s: %s' (device, e)
 
+		TODO: take yaml calibrations as ros parameters 
+
 		# ROS-specific stuff
 		print 'Starting MaestroDriver server to listen for angle commands...'
-		self.action_server = actionlib.SimpleActionServer('set_angles', set_anglesAction, self.move_to_angles, False)
+		self.action_server = actionlib.SimpleActionServer('set_angle', set_angleAction, self.move_to_angle, False)
 		self.action_server.start()
 
 		print 'Starting set speed service...'
@@ -77,21 +79,26 @@ class MaestroDriver:
 		return set_accelResponse(response)
 
 
-	def move_to_angles(self, angles_goal):
-		angles = angles_goal.angles
-		for servo_num, angle in enumerate(angles):
-			# TODO: convert angles to target (in [us])
-			target = int(angle)
-			if target < 1000 or target > 2000:
-				# print 'Target %i outside range 1000...2000' % target
-				continue
-			print 'Moving servo %i to target %i' % (servo_num, target)
-			self.setTarget(servo_num, target)
-			# print 'Servo', servo_num, 'set to', self.getPosition(servo_num)
+	def move_to_angle(self, angle_goal):
+		angle = angle_goal.angle
+		angle = angle_goal.servo_num
+
+		TODO: convert angle (float) to target (int, in [us])
+
+		target = int(angle)
+		if target < 1000 or target > 2000:
+			print 'Target %i outside range 1000...2000' % target
+			
+		print 'Moving servo %i to target %i' % (servo_num, target)
+		self.setTarget(servo_num, target)
+		print 'Servo', servo_num, 'set to', self.getPosition(servo_num)
 		# TODO: poll angles at regular intervals, provide feedback		
 		self.action_server.set_succeeded()
 
 
+	#### The rest of the methods are maestro-specific ####
+	# TODO: refactor this
+	
 	def setTarget(self, servo, position):
 		# print 'setting servo %i to target %i' % (servo, position)
 		position = position * 4
@@ -142,8 +149,15 @@ class MaestroDriver:
 		w2 = ord(self.sc.read())
 		return w1, w2
 
+	def shutdown(self):
+		self.sc.close()
+
 
 if __name__ == '__main__':
 	rospy.init_node('maestro_driver')
-	server = MaestroDriver()
-	rospy.spin()
+	maestro = MaestroDriver()
+	try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print("Shutting down")
+        maestro.shutdown()

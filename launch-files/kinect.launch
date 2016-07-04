@@ -10,7 +10,7 @@
 
   <!-- start the kinect -->
   <include file="$(find openni_launch)/launch/openni.launch"/>
-  
+
   <!-- flip the rgb image -->
   <node pkg="opencv_proc" type="flip_image" name="flip_image" respawn="false">
     <remap from="image_in" to="/camera/rgb/image_raw"/>
@@ -27,11 +27,10 @@
   <node pkg="image_view" type="image_view" name="rgb_image_view" respawn="false" output="screen">
     <remap from="image" to="/flipped_image"/>
    </node>
-  
 
   <!-- show the disparity image -->
   <node pkg="image_view" type="disparity_view" name="disparity_image_view" respawn="false" output="screen">
     <remap from="image" to="/flipped_disparity_image"/>
    </node>
-  
+
 </launch>

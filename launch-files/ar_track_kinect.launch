@@ -26,5 +26,10 @@
         <param name="marker_size" value="$(arg marker_size)" />
     </node>
 
+    <node name="pan_tilt" pkg="pan_tilt" type="pan_tilt">
+        <param name="pan_pin" value="0" />
+        <param name="tilt_pin" value="1" />
+        <remap from="marker" to="/ar_pose_marker" />
+    </node>
 
 </launch>

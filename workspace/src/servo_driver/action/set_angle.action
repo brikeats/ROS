@@ -1,0 +1,10 @@
+# goal (degrees)
+uint8 servo_num
+float32 angle
+
+---
+# result
+
+---
+# progress (degrees)
+float32 angle
