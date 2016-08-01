@@ -31,13 +31,13 @@ class MaestroDriver:
 		try:
 			self.sc = serial.Serial(device, timeout=5)
 		except serial.SerialException, e:
-			print 'Problem opening %s: %s' (device, e)
+			print 'Problem opening %s: %s' % (device, e)
 
-		TODO: take yaml calibrations as ros parameters 
+		# TODO: take yaml calibrations as ros parameters 
 
 		# ROS-specific stuff
 		print 'Starting MaestroDriver server to listen for angle commands...'
-		self.action_server = actionlib.SimpleActionServer('set_angle', set_angleAction, self.move_to_angle, False)
+		self.action_server = actionlib.SimpleActionServer('set_angle', set_angleAction, self.set_target, False)
 		self.action_server.start()
 
 		print 'Starting set speed service...'
@@ -79,19 +79,19 @@ class MaestroDriver:
 		return set_accelResponse(response)
 
 
-	def move_to_angle(self, angle_goal):
-		angle = angle_goal.angle
-		angle = angle_goal.servo_num
+	def set_target(self, target):
+		angle = target.angle
+		servo_num = target.servo_num
 
-		TODO: convert angle (float) to target (int, in [us])
+		# TODO: convert angle (float) to target (int, in [us])
 
 		target = int(angle)
 		if target < 1000 or target > 2000:
 			print 'Target %i outside range 1000...2000' % target
 			
-		print 'Moving servo %i to target %i' % (servo_num, target)
+		rospy.loginfo('Moving servo %i to target %i' % (servo_num, target))
 		self.setTarget(servo_num, target)
-		print 'Servo', servo_num, 'set to', self.getPosition(servo_num)
+		# print 'Servo', servo_num, 'set to', self.getPosition(servo_num)
 		# TODO: poll angles at regular intervals, provide feedback		
 		self.action_server.set_succeeded()
 
@@ -100,12 +100,13 @@ class MaestroDriver:
 	# TODO: refactor this
 	
 	def setTarget(self, servo, position):
-		# print 'setting servo %i to target %i' % (servo, position)
+		# 
 		position = position * 4
 		poslo = (position & 0x7f)
 		poshi = (position >> 7) & 0x7f
 		chan = servo & 0x7f
 		data = chr(0xaa) + chr(0x0c) + chr(0x04) + chr(chan) + chr(poslo) + chr(poshi)
+		# rospy.loginfo('writing ' + data + ' to servo %i' % servo)
 		self.sc.write(data)
 		self.sc.flush()
 
@@ -157,7 +158,7 @@ if __name__ == '__main__':
 	rospy.init_node('maestro_driver')
 	maestro = MaestroDriver()
 	try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")
-        maestro.shutdown()
+	    rospy.spin()
+	except KeyboardInterrupt:
+	    print("Shutting down")
+	    maestro.shutdown()

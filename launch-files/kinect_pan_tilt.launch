@@ -1,0 +1,23 @@
+<launch>
+
+
+  <include file="ar_track_kinect.launch"/>
+
+  <node pkg="servo_driver" type="maestro_driver" name="maestro_driver"/>
+
+  <!-- rqt [dash-dash] perspective-file "$(rospack find my_ros_rqt_package)/config/my_dashboard.perspective" 
+-->
+
+  <arg name="pan_pin" default="0"/>
+  <arg name="tilt_pin" default="1"/>
+
+  <node pkg="pan_tilt" type="pan_tilt" name="pan_tilt" respawn="false">
+    <remap from="marker" to="/ar_pose_marker" />
+    <param name="pan_pin" value="$(arg pan_pin)" />
+    <param name="tilt_pin" value="$(arg tilt_pin)" />
+  </node>
+
+
+  
+
+</launch>
