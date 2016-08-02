@@ -4,7 +4,7 @@ import roslib
 roslib.load_manifest('pan_tilt')
 import rospy
 import actionlib
-from servo_driver.msg import set_angleAction, set_angleGoal
+from servo_driver.msg import set_anglesAction, set_anglesGoal
 from servo_driver.srv import set_speed, set_accel
 # TODO: set speed/accel to control behavior
 from ar_track_alvar_msgs.msg import AlvarMarkers
@@ -25,23 +25,18 @@ class MarkerFollower:
 
         tilt_calib_fn = rospy.get_param('~tilt_calib_file', '/home/brian/.ros/servo_info/tilt_servo.yaml')        
         pan_calib_fn  = rospy.get_param('~pan_calib_file', '/home/brian/.ros/servo_info/pan_servo.yaml')        
-
             
         self.pan_home = 1500
         self.tilt_home = 1500
         
         # blocks until services are available
-        
-
         rospy.wait_for_service('set_speed')
-        self.set_pan_speed(10)
-        self.set_tilt_speed(0)
+        self.set_speed(10, 10)
 
         rospy.wait_for_service('set_accel')
-        self.set_pan_accel(4)
-        self.set_tilt_accel(7)
+        self.set_accel(4, 7)
 
-        self.angle_setter = actionlib.SimpleActionClient('set_angle', set_angleAction)
+        self.angle_setter = actionlib.SimpleActionClient('set_angle', set_anglesAction)
         self.angle_setter.wait_for_server()
         self.go_home()
 
@@ -49,62 +44,58 @@ class MarkerFollower:
         self.marker_sub = rospy.Subscriber(marker_topic, AlvarMarkers, self.on_marker)
 
 
-    def set_pan_speed(self, speed):
-        self.set_servo_speed(self.pan_pin, speed)
-
-    def set_pan_accel(self, accel):
-        self.set_servo_accel(self.pan_pin, accel)
-
-    def set_tilt_speed(self, speed):
-        self.set_servo_speed(self.tilt_pin, speed)
-
-    def set_tilt_accel(self, accel):
-        self.set_servo_accel(self.tilt_pin, accel)
-
     def go_home(self):
-        self.set_servo_target(self.pan_pin, self.pan_home)
-        self.set_servo_target(self.tilt_pin, self.tilt_home)
+        self.set_target(self.pan_home, self.tilt_home)
         self.pan = self.pan_home
         self.tilt = self.tilt_home
+        
 
-    def pan_motion(self, pan_change):
-        """Increase pan angle by a specified number of degrees"""
+    def motion(self, pan_change, tilt_change):
         self.pan += pan_change
-        self.set_servo_target(self.pan_pin, self.pan)
-
-    def tilt_motion(self, tilt_change):
-        """Increase pan angle by a specified number of degrees"""
         self.tilt += tilt_change
-        self.set_servo_target(self.tilt_pin, self.tilt)
+        self.set_target(self.pan, self.tilt)
 
-    def set_servo_target(self, servo_num, target):
+
+    def set_target(self, pan_target, tilt_target):
         try:
+            angles = [1500 for  _ in range(6)]
+            angles[self.pan_pin] = pan_target
+            angles[self.tilt_pin] = tilt_target
+
             self.angle_setter.cancel_goal()
-            goal = set_angleGoal()
-            goal.servo_num = servo_num
-            goal.angle = target
+            goal = set_anglesGoal()
+            goal.angles = angles
             self.angle_setter.send_goal(goal)
-            rospy.loginfo('set target to %i for servo %i' % (servo_num, target))
-            # rospy.loginfo('response: %s' % response)
+
+            # rospy.loginfo('set target to %i for servo %i' % (servo_num, target))
+            self.pan = pan_target
+            self.tilt = tilt_target
         except rospy.ServiceException, e:
             print "Target service call failed: %s" % e
 
 
-    def set_servo_speed(self, servo_num, speed):
+    def set_speed(self, pan_speed, tilt_speed):
         try:
             set_speed_service = rospy.ServiceProxy('set_speed', set_speed)
-            response = set_speed_service(servo_num, speed)
-            rospy.loginfo('set speed to %i for servo %i' % (servo_num, speed))
-            rospy.loginfo('response: %s' % response)
+            pan_response = set_speed_service(self.pan_pin, pan_speed)
+            rospy.loginfo('set speed to %i for servo %i' % (self.pan_pin, pan_speed))
+            rospy.loginfo('response: %s' % pan_response)
+            tilt_response = set_speed_service(self.tilt_pin, tilt_speed)
+            rospy.loginfo('set speed to %i for servo %i' % (self.tilt_pin, tilt_speed))
+            rospy.loginfo('response: %s' % tilt_response)
         except rospy.ServiceException, e:
             rospy.loginfo("Speed service call failed: %s" % e)
 
-    def set_servo_accel(self, servo_num, accel):
+
+    def set_accel(self, pan_accel, tilt_accel):
         try:
             set_accel_service = rospy.ServiceProxy('set_accel', set_accel)
-            response = set_accel_service(servo_num, accel)
-            rospy.loginfo('set accel to %i for servo %i' % (servo_num, accel))
-            rospy.loginfo('response: %s' % response)
+            pan_response = set_accel_service(self.pan_pin, pan_accel)
+            rospy.loginfo('set accel to %i for servo %i' % (self.pan_pin, pan_accel))
+            rospy.loginfo('response: %s' % pan_response)
+            tilt_response = set_accel_service(self.tilt_pin, tilt_accel)
+            rospy.loginfo('set accel to %i for servo %i' % (self.tilt_pin, tilt_accel))
+            rospy.loginfo('response: %s' % tilt_response)
         except rospy.ServiceException, e:
             rospy.loginfo("Accel service call failed: %s" % e)
 
@@ -120,8 +111,7 @@ class MarkerFollower:
             rospy.loginfo('pan %.f, tilt %.f' % (np.rad2deg(pan_err), np.rad2deg(tilt_err)))
 
             us_per_deg = 50
-            self.tilt_motion(-tilt_err * us_per_deg)
-            self.pan_motion(-pan_err * us_per_deg)
+            self.motion(-pan_err*us_per_deg, -tilt_err*us_per_deg)
     
 
 
@@ -131,4 +121,5 @@ if __name__ == '__main__':
     try:
         rospy.spin()
     except KeyboardInterrupt:
-        print("Shutting down")
+        image_converter.go_home()
+        print("Pan-tilt shutting down")
