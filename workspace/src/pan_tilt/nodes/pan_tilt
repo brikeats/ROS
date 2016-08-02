@@ -79,7 +79,7 @@ class MarkerFollower:
 
     def set_servo_target(self, servo_num, target):
         try:
-
+            self.angle_setter.cancel_goal()
             goal = set_angleGoal()
             goal.servo_num = servo_num
             goal.angle = target
