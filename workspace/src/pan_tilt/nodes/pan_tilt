@@ -31,10 +31,10 @@ class MarkerFollower:
         
         # blocks until services are available
         rospy.wait_for_service('set_speed')
-        self.set_speed(10, 10)
+        self.set_speed(20, 20)
 
         rospy.wait_for_service('set_accel')
-        self.set_accel(4, 7)
+        self.set_accel(7, 10)
 
         self.angle_setter = actionlib.SimpleActionClient('set_angle', set_anglesAction)
         self.angle_setter.wait_for_server()

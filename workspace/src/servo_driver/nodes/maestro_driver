@@ -8,7 +8,7 @@ roslib.load_manifest('servo_driver')
 import rospy
 import actionlib
 
-from servo_driver.msg import set_angleAction
+from servo_driver.msg import set_anglesAction
 from servo_driver.srv import set_speed, set_accel, set_speedResponse, set_accelResponse
 
 """
@@ -37,7 +37,7 @@ class MaestroDriver:
 
 		# ROS-specific stuff
 		print 'Starting MaestroDriver server to listen for angle commands...'
-		self.action_server = actionlib.SimpleActionServer('set_angle', set_angleAction, self.set_target, False)
+		self.action_server = actionlib.SimpleActionServer('set_angle', set_anglesAction, self.set_target, False)
 		self.action_server.start()
 
 		print 'Starting set speed service...'
@@ -80,19 +80,13 @@ class MaestroDriver:
 
 
 	def set_target(self, target):
-		angle = target.angle
-		servo_num = target.servo_num
-
 		# TODO: convert angle (float) to target (int, in [us])
-
-		target = int(angle)
-		if target < 1000 or target > 2000:
-			print 'Target %i outside range 1000...2000' % target
-			
-		rospy.loginfo('Moving servo %i to target %i' % (servo_num, target))
-		self.setTarget(servo_num, target)
-		# print 'Servo', servo_num, 'set to', self.getPosition(servo_num)
-		# TODO: poll angles at regular intervals, provide feedback		
+		for servo_num, angle in enumerate(target.angles):
+			if angle < 1000 or angle > 2000:
+				print 'Target %i outside range 1000...2000' % angle
+			rospy.loginfo('Moving servo %i to target %i' % (servo_num, int(angle)))
+			self.setTarget(servo_num, int(angle))
+			# TODO: poll angles at regular intervals, provide feedback		
 		self.action_server.set_succeeded()
 
 
