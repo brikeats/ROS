@@ -23,5 +23,7 @@
 		<param name="marker_size" value="$(arg marker_size)" />
 	</node>
 
+	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
+
 
 </launch>

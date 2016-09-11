@@ -12,25 +12,20 @@
   <include file="$(find openni_launch)/launch/openni.launch"/>
 
   <!-- flip the rgb image -->
-  <node pkg="opencv_proc" type="flip_image" name="flip_image" respawn="false">
-    <remap from="image_in" to="/camera/rgb/image_raw"/>
-    <remap from="image_out" to="/flipped_image"/>
-  </node>
+  <group if="$(arg flip_ud)">
 
-  <!-- flip the disparity image -->
-  <node pkg="opencv_proc" type="flip_disparity_image" name="flip_disparity_image" respawn="false">
-    <remap from="image_in" to="/camera/depth/disparity"/>
-    <remap from="image_out" to="/flipped_disparity_image"/>
-  </node>
+    <node pkg="opencv_proc" type="flip_image" name="flip_image" respawn="false">
+      <remap from="image_in" to="/camera/rgb/image_raw"/>
+      <remap from="image_out" to="/flipped_image"/>
+    </node>
 
-  <!-- show the rgb image -->
-  <node pkg="image_view" type="image_view" name="rgb_image_view" respawn="false" output="screen">
-    <remap from="image" to="/flipped_image"/>
-   </node>
+    <!-- flip the disparity image -->
+    <node pkg="opencv_proc" type="flip_disparity_image" name="flip_disparity_image" respawn="false">
+      <remap from="image_in" to="/camera/depth/disparity"/>
+      <remap from="image_out" to="/flipped_disparity_image"/>
+    </node>
+  </group>
 
-  <!-- show the disparity image -->
-  <node pkg="image_view" type="disparity_view" name="disparity_image_view" respawn="false" output="screen">
-    <remap from="image" to="/flipped_disparity_image"/>
-   </node>
+  <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
 
 </launch>
