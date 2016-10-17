@@ -1,0 +1,9 @@
+# goal (angles in degrees)
+float32[] angles
+
+---
+# result
+
+---
+# progress (degrees)
+float32[] angles

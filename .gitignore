@@ -1,4 +1,6 @@
 doc/
+workspace/devel/
+workspace/.catkin_workspace
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

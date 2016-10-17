@@ -12,7 +12,9 @@ import rospy
 class UltrasonicArrayController:
 
     def __init__(self):
-        pass
+
+        out_topic = '/image_out'
+        self.image_pub = rospy.Publisher(out_topic, Image)
 
 
 if __name__ == '__main__':
