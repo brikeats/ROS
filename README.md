@@ -18,9 +18,9 @@ I haven't been able to figure out how to use the `sudo` command with the launch 
 
 ## Laptop Setup
 Add a line to `/etc/hosts` that indicates the pi's IP address, e.g., `192.168.0.104   raspberrypi`.
-Setup up public key authentication -- you're good to go when you can log on to the raspberry pi with the command `ssh raspberrypi`. You can then copy the code, build, and install it on the pi by running the install script, `./install`.
+Set up up public key authentication -- you're good to go when you can log on to the raspberry pi with the command `ssh raspberrypi`. You can then copy the code, build, and install it on the pi with `rsync -a ROS/ raspberrypi:~/ROS`.
 
-Add the same lines to your `.bashrc`:
+Add the same lines to your laptop `.bashrc`:
 ```
 source /opt/ros/indigo/setup.bash
 export ROS_MASTER_URI=http://raspberrypi:11311
