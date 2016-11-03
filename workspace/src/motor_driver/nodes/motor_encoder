@@ -27,20 +27,20 @@ class MotorEncoder:
         pub = rospy.Publisher('tick_count', Int16, queue_size=10)
         rate = rospy.Rate(40)  # hz
         
-        self.backwards = rospy.get_param('~backwards')
-        white_pin = rospy.get_param('~white_pin')
-        yellow_pin = rospy.get_param('~yellow_pin')
+        # self.backwards = rospy.get_param('~backwards')
+        white_pin = rospy.get_param('~white_pin', 31)
+        yellow_pin = rospy.get_param('~yellow_pin', 33)
 
         self.tick_count = 0
         
         self.yellow_pin = yellow_pin
         self.white_pin = white_pin
 
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.yellow_pin, GPIO.IN)
         GPIO.setup(self.white_pin, GPIO.IN)
 
-        GPIO.add_event_detect(self.yellow_pin, GPIO.BOTH, callback=self.edge_changing)
+        # GPIO.add_event_detect(self.yellow_pin, GPIO.BOTH, callback=self.edge_changing)
         GPIO.add_event_detect(self.white_pin, GPIO.BOTH, callback=self.edge_changing)
 
         # flag variables to track which channel most recently rose/fell

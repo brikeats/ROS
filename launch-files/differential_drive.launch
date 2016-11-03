@@ -15,7 +15,7 @@
 			<arg name="yellow_pin" value="11" />
 		</include>
 
-		<!-- PID controller -->
+		<!-- PID controller 
 		<node pkg="differential-drive" type="pid_velocity.py" name="motor_controller">
 			<param name="Kp" value="$(arg Kp)" />
 			<param name="Ki" value="$(arg Ki)" />
@@ -24,9 +24,9 @@
 			<param name="out_max" value="100" />
 			<param name="timeout_ticks" value="100000" />
 			
-			<!--If no wheel_vtarget messages are received in timeout_ticks / rate seconds the wheels are stopped. -->
 			<remap from="motor_cmd" to="motor_effort"/>
 		</node>
+	-->
 		
 
 	</group>
@@ -41,6 +41,7 @@
 			<arg name="yellow_pin" value="4" />
 		</include>
 
+		<!--
 		<node pkg="differential-drive" type="pid_velocity.py" name="motor_controller">
 			<param name="Kp" value="$(arg Kp)" />
 			<param name="Ki" value="$(arg Ki)" />
@@ -49,6 +50,7 @@
 			<param name="out_max" value="100" />
 			<remap from="motor_cmd" to="motor_effort"/>
 		</node>
+	-->
 
 	</group>
 
