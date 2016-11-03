@@ -4,8 +4,9 @@ import serial
 import time
 
 import roslib
-roslib.load_manifest('servo_driver')
+roslib.load_manifest('ultrasonic_array')
 import rospy
+from sensor_msgs.msg import Range
 
 
 
