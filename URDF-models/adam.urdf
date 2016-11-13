@@ -1,0 +1,164 @@
+<?xml version=1.0?>
+<robot name=ADAM>
+
+
+  <link name=base_link>
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/adam_base.dae"/>
+      </geometry>
+      <material name="white">
+         <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name=right_riser_level1>
+    <visual>
+      <geometry>
+        <box size="0.0075 0.165 0.07"/>
+      </geometry>
+      <material name="white">
+         <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="base_to_right_riser_level1" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_riser_level1"/>
+    <origin xyz="0.0725 -0.0625 0.035"/>
+  </joint>
+
+
+  <link name=left_riser_level1>
+    <visual>
+      <geometry>
+        <box size="0.0075 0.165 0.07"/>
+      </geometry>
+      <material name="white">
+         <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="base_to_left_riser_level1" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_riser_level1"/>
+    <origin xyz="-0.0725 -0.0625 0.035"/>
+  </joint>
+
+
+  <link name=drawer>
+    <visual>
+      <geometry>
+        <box size="0.14 0.14 0.005"/>
+      </geometry>
+      <material name="white">
+         <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="base_to_drawer" type="fixed">
+    <parent link="base_link"/>
+    <child link="drawer"/>
+    <origin xyz="0 -0.065 0.0075"/>
+  </joint>
+
+
+  <link name="right_motor">
+    <visual>
+      <geometry>
+        <cylinder length="0.07" radius="0.02"/>
+      </geometry>
+      <material name="light_gray">
+        <color rgba="0.3 0.3 0.3 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="right_motor_to_base" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_motor"/>
+    <origin rpy="0 1.57075 0" xyz="0.075 0 -.03"/>
+  </joint>
+
+   <link name="right_axle">
+    <visual>
+      <geometry>
+        <cylinder length="0.02" radius="0.0025"/>
+      </geometry>
+      <material name="light_gray">
+        <color rgba="1.0 0.3 0.3 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="right_axle_to_motor" type="fixed">
+    <parent link="right_motor"/>
+    <child link="right_axle"/>
+    <origin rpy="0 0 0" xyz="0.0 0 0.045"/>
+  </joint>
+
+  <link name="right_wheel">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/wheel_90mm.dae"/>
+      </geometry>
+      <material name="dark_Gray">
+         <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="right_wheel_to_axle" type="fixed">
+    <parent link="right_axle"/>
+    <child link="right_wheel"/>
+    <origin rpy="0 0 0" xyz="0 0 0.015"/>
+  </joint>
+
+
+  <link name="left_motor">
+    <visual>
+      <geometry>
+        <cylinder length="0.07" radius="0.02"/>
+      </geometry>
+      <material name="light_gray">
+        <color rgba="0.3 0.3 0.3 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="left_motor_to_base" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_motor"/>
+    <origin rpy="0 -1.57075 0" xyz="-0.075 0 -.03"/>
+  </joint>
+
+   <link name="left_axle">
+    <visual>
+      <geometry>
+        <cylinder length="0.03" radius="0.0025"/>
+      </geometry>
+      <material name="light_gray">
+        <color rgba="1.0 0.3 0.3 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="left_axle_to_motor" type="fixed">
+    <parent link="left_motor"/>
+    <child link="left_axle"/>
+    <origin rpy="0 0 0" xyz="0.0 0 0.045"/>
+  </joint>
+
+  <link name="left_wheel">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/wheel_90mm.dae"/>
+      </geometry>
+      <material name="dark_Gray">
+         <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="left_wheel_to_axle" type="fixed">
+    <parent link="left_axle"/>
+    <child link="left_wheel"/>
+    <origin rpy="0 0 0" xyz="0 0 0.015"/>
+  </joint>
+
+</robot>
