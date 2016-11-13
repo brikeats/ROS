@@ -1,12 +1,15 @@
-#define NUM_PINS 2
 #include <stdarg.h>
 
 
-
-
 // the program will send pings cyclically to the pins listed here
-int pingPins[NUM_PINS] = {9, 10};
+#define NUM_PINS 6
+int pingPins[NUM_PINS] = {6, 7, 8, 9, 10, 12};
+int distances[NUM_PINS] = {0, 0, 0, 0, 0, 0};
+float max_range = 400;  // cm
+
+unsigned long max_wait = 29 * max_range;  // us
 long index;
+
 
 void setup() {
   // initialize serial communication:
@@ -37,7 +40,7 @@ float measureDistance(int pinNum){
 
   // wait for echo
   pinMode(pinNum, INPUT);
-  long duration = pulseIn(pinNum, HIGH);
+  long duration = pulseIn(pinNum, HIGH, max_wait);
 
   // convert the time into a distance
   // The speed of sound is 340 m/s or 29 microseconds per centimeter.
@@ -54,13 +57,21 @@ void loop() {
 //  String activePinName = pinNames[index];
   
   int activePin = pingPins[index];
-
   float distance = measureDistance(activePin);
-  serial_printf("%d  %d\n", activePin, int(distance));
+  distances[index] = int(distance);
+  
+  serial_printf("%d:%03d, %d:%03d, %d:%03d, %d:%03d, %d:%03d, %d:%03d\n", 
+                pingPins[0], distances[0],
+                pingPins[1], distances[1],
+                pingPins[2], distances[2],
+                pingPins[3], distances[3],
+                pingPins[4], distances[4],
+                pingPins[5], distances[5]
+                );
   
   index += 1;
   index = index % NUM_PINS;
   
-  delay(250);
+  delay(25);
 }
 
