@@ -3,7 +3,7 @@ My ROS packages for raspberry pi-based robots. This assumes that you have a rasp
 
 ## Raspberry Pi Setup
 [Create a static ip address](https://help.ubuntu.com/lts/serverguide/network-configuration.html)
-by editing ` /etc/network/interfaces`.
+by editing ` /etc/network/interfaces`. Go to router's admin page and set DHCP settings to always assign the correct ip address to the pi, identified by its MAC address -- the `HWaddr` in output of `ifconfig`. (I think the MAC address is actually associated with the usb dongle.)
 
 Make sure your enviromental variable are set correctly by adding the following to your `.bashrc`:
 ```
