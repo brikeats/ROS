@@ -1,8 +1,8 @@
-<?xml version=1.0?>
-<robot name=ADAM>
+<?xml version="1.0"?>
+<robot name="ADAM">
 
 
-  <link name=base_link>
+  <link name="base_link">
     <visual>
       <geometry>
         <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/adam_base.dae"/>
@@ -13,7 +13,7 @@
     </visual>
   </link>
 
-  <link name=right_riser_level1>
+  <link name="right_riser_level1">
     <visual>
       <geometry>
         <box size="0.0075 0.165 0.07"/>
@@ -30,7 +30,7 @@
   </joint>
 
 
-  <link name=left_riser_level1>
+  <link name="left_riser_level1">
     <visual>
       <geometry>
         <box size="0.0075 0.165 0.07"/>
@@ -47,7 +47,7 @@
   </joint>
 
 
-  <link name=drawer>
+  <link name="drawer">
     <visual>
       <geometry>
         <box size="0.14 0.14 0.005"/>
@@ -90,9 +90,10 @@
       </material>
     </visual>
   </link>
-  <joint name="right_axle_to_motor" type="fixed">
+  <joint name="right_axle_to_motor" type="continuous">
     <parent link="right_motor"/>
     <child link="right_axle"/>
+    <axis xyz="0 0 1"/>
     <origin rpy="0 0 0" xyz="0.0 0 0.045"/>
   </joint>
 
@@ -139,9 +140,10 @@
       </material>
     </visual>
   </link>
-  <joint name="left_axle_to_motor" type="fixed">
+  <joint name="left_axle_to_motor" type="continuous">
     <parent link="left_motor"/>
     <child link="left_axle"/>
+    <axis xyz="0 0 1"/>
     <origin rpy="0 0 0" xyz="0.0 0 0.045"/>
   </joint>
 
