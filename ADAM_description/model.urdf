@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="ADAM">
+<robot name="ADAM" xmlns:xacro="http://www.ros.org/wiki/xacro">>
 
 
   <!-- Base, Risers, Drawer (first level) -->
@@ -13,7 +13,12 @@
          <color rgba="1 1 1 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
 
   <link name="right_riser_level1">
     <visual>
@@ -24,7 +29,12 @@
          <color rgba="1 1 1 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_right_riser_level1" type="fixed">
     <parent link="base_link"/>
     <child link="right_riser_level1"/>
@@ -41,7 +51,12 @@
          <color rgba="1 1 1 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_left_riser_level1" type="fixed">
     <parent link="base_link"/>
     <child link="left_riser_level1"/>
@@ -58,7 +73,13 @@
          <color rgba="1 1 1 1"/>
       </material>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_drawer" type="fixed">
     <parent link="base_link"/>
     <child link="drawer"/>
@@ -77,12 +98,19 @@
         <color rgba="0.3 0.3 0.3 1"/>
       </material>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="right_motor_to_base" type="fixed">
     <parent link="base_link"/>
     <child link="right_motor"/>
     <origin rpy="0 1.57075 0" xyz="0.075 0 -.03"/>
   </joint>
+
 
    <link name="right_axle">
     <visual>
@@ -93,13 +121,19 @@
         <color rgba="1.0 0.3 0.3 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="right_axle_to_motor" type="continuous">
     <parent link="right_motor"/>
     <child link="right_axle"/>
     <axis xyz="0 0 1"/>
     <origin rpy="0 0 0" xyz="0.0 0 0.045"/>
   </joint>
+
 
   <link name="right_wheel">
     <visual>
@@ -110,7 +144,12 @@
          <color rgba="0 0 0 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="right_wheel_to_axle" type="fixed">
     <parent link="right_axle"/>
     <child link="right_wheel"/>
@@ -127,7 +166,12 @@
         <color rgba="0.3 0.3 0.3 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="left_motor_to_base" type="fixed">
     <parent link="base_link"/>
     <child link="left_motor"/>
@@ -143,13 +187,19 @@
         <color rgba="1.0 0.3 0.3 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="left_axle_to_motor" type="continuous">
     <parent link="left_motor"/>
     <child link="left_axle"/>
     <axis xyz="0 0 1"/>
     <origin rpy="0 0 0" xyz="0.0 0 0.045"/>
   </joint>
+
 
   <link name="left_wheel">
     <visual>
@@ -160,7 +210,12 @@
          <color rgba="0.1 0.1 0.1 1"/>
       </material>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="left_wheel_to_axle" type="fixed">
     <parent link="left_axle"/>
     <child link="left_wheel"/>
@@ -177,7 +232,13 @@
          <color rgba="0.4 0.4 0.4 1"/>
       </material>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_caster_pivot" type="continuous">
     <parent link="base_link"/>
     <child link="castor_pivot"/>
@@ -195,7 +256,13 @@
          <color rgba="0.1 0.1 0.1 1"/>
       </material>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="caster_pivot_to_caster_wheel" type="continuous">
     <parent link="castor_pivot"/>
     <child link="castor_wheel"/>
@@ -212,12 +279,18 @@
         <mesh filename="file:///home/brian/robotics_code/ROS/ADAM_description/meshes/ultrasonic_sensor_with_mount.dae"/>
       </geometry>
     </visual>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_front_center_ultrasonic_sensor" type="fixed">
     <parent link="base_link"/>
     <child link="front_center_ultrasonic_sensor"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
+
 
   <link name="front_right_ultrasonic_sensor">
     <visual>
@@ -225,12 +298,19 @@
         <mesh filename="file:///home/brian/robotics_code/ROS/ADAM_description/meshes/ultrasonic_sensor_with_mount.dae"/>
       </geometry>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_front_right_ultrasonic_sensor" type="fixed">
     <parent link="base_link"/>
     <child link="front_right_ultrasonic_sensor"/>
     <origin rpy="0 0 -0.523" xyz="0.09 0 0"/>
   </joint>
+
 
   <link name="front_left_ultrasonic_sensor">
     <visual>
@@ -238,12 +318,19 @@
         <mesh filename="file:///home/brian/robotics_code/ROS/ADAM_description/meshes/ultrasonic_sensor_with_mount.dae"/>
       </geometry>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_front_left_ultrasonic_sensor" type="fixed">
     <parent link="base_link"/>
     <child link="front_left_ultrasonic_sensor"/>
     <origin rpy="0 0 0.523" xyz="-0.09 0 0"/>
   </joint>
+
 
   <link name="rear_center_ultrasonic_sensor">
     <visual>
@@ -251,12 +338,19 @@
         <mesh filename="file:///home/brian/robotics_code/ROS/ADAM_description/meshes/ultrasonic_sensor_with_mount.dae"/>
       </geometry>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_rear_center_ultrasonic_sensor" type="fixed">
     <parent link="base_link"/>
     <child link="rear_center_ultrasonic_sensor"/>
     <origin rpy="0 0 3.1415" xyz="0 -0.20 0"/>
   </joint>
+
 
   <link name="rear_right_ultrasonic_sensor">
     <visual>
@@ -264,20 +358,33 @@
         <mesh filename="file:///home/brian/robotics_code/ROS/ADAM_description/meshes/ultrasonic_sensor_with_mount.dae"/>
       </geometry>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_rear_right_ultrasonic_sensor" type="fixed">
     <parent link="base_link"/>
     <child link="rear_right_ultrasonic_sensor"/>
     <origin rpy="0 0 -2.36" xyz="0.06 -0.16 0"/>
   </joint>
 
+
   <link name="rear_left_ultrasonic_sensor">
     <visual>
       <geometry>
-        <mesh filename="file:///./meshes/ultrasonic_sensor_with_mount.dae"/>
+        <mesh filename="file:///home/brian/robotics_code/ROS/ADAM_description/meshes/ultrasonic_sensor_with_mount.dae"/>
       </geometry>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+
   <joint name="base_to_rear_left_ultrasonic_sensor" type="fixed">
     <parent link="base_link"/>
     <child link="rear_left_ultrasonic_sensor"/>
@@ -293,7 +400,13 @@
         <mesh filename="file:///home/brian/robotics_code/ROS/ADAM_description/meshes/kinect.dae"/>
       </geometry>
     </visual>
+
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
+    </inertial>
   </link>
+  
   <joint name="base_to_kinect" type="fixed">
     <parent link="base_link"/>
     <child link="kinect"/>
