@@ -2,6 +2,8 @@
 <robot name="ADAM">
 
 
+  <!-- Base, Risers, Drawer (first level) -->
+
   <link name="base_link">
     <visual>
       <geometry>
@@ -63,6 +65,8 @@
     <origin xyz="0 -0.065 0.0075"/>
   </joint>
 
+
+  <!-- Motors, Wheels, Axles -->
 
   <link name="right_motor">
     <visual>
@@ -162,5 +166,136 @@
     <child link="left_wheel"/>
     <origin rpy="0 0 0" xyz="0 0 0.015"/>
   </joint>
+
+
+  <link name="castor_pivot">
+    <visual>
+      <geometry>
+        <cylinder length="0.005" radius="0.015"/>
+      </geometry>
+      <material name="gray">
+         <color rgba="0.4 0.4 0.4 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="base_to_caster_pivot" type="continuous">
+    <parent link="base_link"/>
+    <child link="castor_pivot"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="0 -0.19 -0.0115"/>
+  </joint>
+
+
+  <link name="castor_wheel">
+    <visual>
+      <geometry>
+        <cylinder length="0.014" radius="0.015"/>
+      </geometry>
+      <material name="black">
+         <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="caster_pivot_to_caster_wheel" type="continuous">
+    <parent link="castor_pivot"/>
+    <child link="castor_wheel"/>
+    <axis xyz="0 0 1"/>
+    <origin rpy="0 1.57075 0" xyz="0 -0.012 -0.02"/>
+  </joint>
+
+
+  <!-- Sensor -->
+
+  <link name="kinect">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/kinect.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="base_to_kinect" type="fixed">
+    <parent link="base_link"/>
+    <child link="kinect"/>
+    <origin rpy="0 0 3.141593" xyz="0 -.05 .10"/>
+  </joint>
+
+  <link name="front_center_ultrasonic_sensor">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/ultrasonic_sensor_with_mount.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="base_to_front_center_ultrasonic_sensor" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_center_ultrasonic_sensor"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+  <link name="front_right_ultrasonic_sensor">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/ultrasonic_sensor_with_mount.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="base_to_front_right_ultrasonic_sensor" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_right_ultrasonic_sensor"/>
+    <origin rpy="0 0 -0.523" xyz="0.09 0 0"/>
+  </joint>
+
+  <link name="front_left_ultrasonic_sensor">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/ultrasonic_sensor_with_mount.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="base_to_front_left_ultrasonic_sensor" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_left_ultrasonic_sensor"/>
+    <origin rpy="0 0 0.523" xyz="-0.09 0 0"/>
+  </joint>
+
+  <link name="rear_center_ultrasonic_sensor">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/ultrasonic_sensor_with_mount.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="base_to_rear_center_ultrasonic_sensor" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_center_ultrasonic_sensor"/>
+    <origin rpy="0 0 3.1415" xyz="0 -0.20 0"/>
+  </joint>
+
+  <link name="rear_right_ultrasonic_sensor">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/ultrasonic_sensor_with_mount.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="base_to_rear_right_ultrasonic_sensor" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_right_ultrasonic_sensor"/>
+    <origin rpy="0 0 -2.36" xyz="0.06 -0.16 0"/>
+  </joint>
+
+  <link name="rear_left_ultrasonic_sensor">
+    <visual>
+      <geometry>
+        <mesh filename="file:///home/brian/robotics_code/ROS/URDF-models/ultrasonic_sensor_with_mount.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="base_to_rear_left_ultrasonic_sensor" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_left_ultrasonic_sensor"/>
+    <origin rpy="0 0 2.36" xyz="-0.06 -0.16 0"/>
+  </joint>
+
 
 </robot>
