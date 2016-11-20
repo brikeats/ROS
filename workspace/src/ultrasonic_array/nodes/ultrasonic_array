@@ -6,7 +6,14 @@ import time
 import roslib
 roslib.load_manifest('ultrasonic_array')
 import rospy
+from std_msgs.msg import String
 from sensor_msgs.msg import Range
+import sys
+from glob import glob
+import serial
+
+
+ports = glob('/dev/ttyACM*')
 
 
 
@@ -14,15 +21,62 @@ class UltrasonicArrayController:
 
     def __init__(self):
 
-        out_topic = '/image_out'
-        self.image_pub = rospy.Publisher(out_topic, Image)
+        try:
+            port = ports[0]
+        except IndexError:
+            rospy.loginfo('No available port like /dev/ttyACM*')
+            sys.exit(0)
+        ser = serial.Serial(port=port, baudrate=9600)
+        rospy.loginfo('connected to: ' + ser.portstr)
 
+        rospy.init_node('ultrasonic_array')
+        pub = rospy.Publisher('ultrasonic_measurements', Range, queue_size=10)
+        range_msg = Range()
+        range_msg.radiation_type = Range.ULTRASOUND
+        rate = rospy.Rate(10) # 10hz
+
+        # http://www.robotshop.com/media/files/pdf/datasheet-sen136b5b.pdf
+        range_msg.field_of_view = 30. * (3.1416 / 180)
+        range_msg.min_range = 0.02
+        range_msg.max_range = 4.0
+        range_msg.range = 0.
+
+        while not rospy.is_shutdown():
+            try:
+                try:
+                    line = ser.readline()
+
+                    # parse the line
+                    if line:
+                        rospy.loginfo(line)
+                        range_msg.header.stamp = rospy.Time.now()
+
+
+                        # parse the line
+                        try:
+                            pin_num = int(line.split(':')[0])
+                            range_cm = int(line.split(':')[1])
+                        except:
+                            continue
+
+                        # rospy.loginfo('pin %i: %i cm' % (pin_num, range_cm))
+                        if pin_num == 12:
+                            range_msg.range = float(range_cm) / 100
+                            pub.publish(range_msg)
+                            rate.sleep()
+
+                except serial.serialutil.SerialException:
+                    pass
+
+            except KeyboardInterrupt:
+                rospy.loginfo('closing port ' + port)
+                ser.close()    
+                        
+            
 
 if __name__ == '__main__':
-    rospy.init_node('ultrasonic_array')
-    ultrasonic_array = UltrasonicArrayController()
     try:
-        rospy.spin()
+        UltrasonicArrayController()
     except KeyboardInterrupt:
-        print("Shutting down")
+        rospy.loginfo('Shutting down')
         ultrasonic_array.shutdown()
