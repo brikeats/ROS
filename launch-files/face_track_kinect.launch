@@ -1,0 +1,18 @@
+  
+ <launch>
+
+    <!-- start the kinect -->
+    <include file="$(find openni_launch)/launch/openni.launch"/>
+
+    <arg name="cam_image_topic" default="/camera/rgb/image_raw" />   
+
+  <!-- flip the rgb image -->
+  <node pkg="face_detector" type="face_detector" name="face_detector" respawn="false">
+    <remap from="image_in" to="$(arg cam_image_topic)" />
+    <remap from="image_out" to="/face_image" /> 
+  </node>
+
+  <!-- Visualize in rqt -->
+  <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
+
+</launch>
