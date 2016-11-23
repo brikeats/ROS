@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-<robot name="ADAM" xmlns:xacro="http://www.ros.org/wiki/xacro">>
+<robot name="ADAM" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 
   <!-- Base, Risers, Drawer (first level) -->
@@ -149,6 +148,11 @@
          <color rgba="0 0 0 1"/>
       </material>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://adam_description/meshes/wheel_90mm.dae"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="1" />
       <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
@@ -215,6 +219,11 @@
          <color rgba="0.1 0.1 0.1 1"/>
       </material>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://adam_description/meshes/wheel_90mm.dae"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="1" />
       <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
@@ -261,7 +270,11 @@
          <color rgba="0.1 0.1 0.1 1"/>
       </material>
     </visual>
-
+    <collision>
+      <geometry>
+        <cylinder length="0.014" radius="0.015"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="1" />
       <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0" />
