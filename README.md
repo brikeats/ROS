@@ -7,7 +7,9 @@ I installed as per the ROS website in Ubuntu 16.04. I added `source /opt/ros/kin
 
 Running `catkin_make` on this workspace is giving me `ImportError`s for `catkin_pkg`, even though I had apt installed the packages and PYTHONPATH is pointing to `/opt/ros/kinetic/lib/dist...`. Had to `pip install --user catkin_pkg`.
 
-Next I'm getting `ImportError: No module named em`, so do `pip install --user empy`.
+Next I'm getting `ImportError: No module named em`, so do `pip install --user empy`. Then I can build workspace okay.
+
+When I try to run one of my nodes, I get  `ImportError: No module named 'rospkg'`. This is because of miniconda -- when it is installed, it adds itself to the beginning of the `PATH` in my `.bashrc`. I commented out this line in `~/.bashrc`, and it seems to be working okay.
 
 ## Raspberry Pi Setup
 [Create a static ip address](https://help.ubuntu.com/lts/serverguide/network-configuration.html)
