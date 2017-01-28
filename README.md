@@ -1,6 +1,14 @@
 # ROS
 My ROS packages for raspberry pi-based robots. This assumes that you have a raspberry pi 2 with Ubuntu and ROS installed, and that you have a remote machine (e.g., a laptop) also running Ubuntu with ROS.
 
+## Laptop Setup
+
+I installed as per the ROS website in Ubuntu 16.04. I added `source /opt/ros/kinetic/setup.bash` to my .bashrc.
+
+Running `catkin_make` on this workspace is giving me `ImportError`s for `catkin_pkg`, even though I had apt installed the packages and PYTHONPATH is pointing to `/opt/ros/kinetic/lib/dist...`. Had to `pip install --user catkin_pkg`.
+
+Next I'm getting `ImportError: No module named em`, so do `pip install --user empy`.
+
 ## Raspberry Pi Setup
 [Create a static ip address](https://help.ubuntu.com/lts/serverguide/network-configuration.html)
 by editing ` /etc/network/interfaces`. Go to router's admin page and set DHCP settings to always assign the correct ip address to the pi, identified by its MAC address -- the `HWaddr` in output of `ifconfig`. (I think the MAC address is actually associated with the usb dongle.)

@@ -5,8 +5,6 @@ project(ultrasonic_array)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rosserial_arduino
-  rosserial_client
   std_msgs
 )
 
@@ -102,7 +100,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ultrasonic_array
-#  CATKIN_DEPENDS rosserial_arduino rosserial_client std_msgs
+#  CATKIN_DEPENDS std_msgs
 #  DEPENDS system_lib
 )
 
