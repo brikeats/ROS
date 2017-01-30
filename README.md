@@ -11,6 +11,12 @@ Next I'm getting `ImportError: No module named em`, so do `pip install --user em
 
 When I try to run one of my nodes, I get  `ImportError: No module named 'rospkg'`. This is because of miniconda -- when it is installed, it adds itself to the beginning of the `PATH` in my `.bashrc`. I commented out this line in `~/.bashrc`, and it seems to be working okay.
 
+To use the kinect, `sudo apt install ros-kinetic-openni-launch`.
+
+To allow for arbitrary user to use maestro servo controller, `sudo adduser <user_name> dialout` and reboot.
+
+
+
 ## Raspberry Pi Setup
 [Create a static ip address](https://help.ubuntu.com/lts/serverguide/network-configuration.html)
 by editing ` /etc/network/interfaces`. Go to router's admin page and set DHCP settings to always assign the correct ip address to the pi, identified by its MAC address -- the `HWaddr` in output of `ifconfig`. (I think the MAC address is actually associated with the usb dongle.)
