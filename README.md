@@ -42,3 +42,4 @@ source /opt/ros/indigo/setup.bash
 export ROS_MASTER_URI=http://raspberrypi:11311
 export ROS_IP=`hostname -I`
 ```
+Make sure you have all of the dependencies installed for the packages in this repo by `rosdep install --from-paths ROS/workspace/src/ --ignore-src`
