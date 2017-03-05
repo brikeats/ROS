@@ -26,20 +26,16 @@
         <param name="marker_size" value="$(arg marker_size)" />
     </node>
 
-    <!-- flip the rgb image -->
-  <node pkg="opencv_proc" type="flip_image" name="flip_image" respawn="false">
-    <remap from="image_in" to="/marker_image"/>
-    <remap from="image_out" to="/flipped_image"/>
-  </node>
+    
+    <node name="servo_driver" pkg="servo_driver" type="maestro_driver"/>
 
-    <!--
     <node name="pan_tilt" pkg="pan_tilt" type="pan_tilt">
-        <param name="pan_pin" value="0" />
-        <param name="tilt_pin" value="1" />
+        <param name="pan_pin" value="1" />
+        <param name="tilt_pin" value="0" />
         <remap from="marker" to="/ar_pose_marker" />
     </node>
-    -->
 
+    
     <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
-
+    
 </launch>

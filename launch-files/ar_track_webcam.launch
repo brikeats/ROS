@@ -15,9 +15,9 @@
     <arg name="marker_size" default="3.2" />
     <arg name="max_new_marker_error" default="0.08" />
     <arg name="max_track_error" default="0.2" />
-    <arg name="cam_image_topic" default="/image_raw" />
-    <arg name="cam_info_topic" default="/camera_info" />    
-    <arg name="output_frame" default="/camera" />
+    <arg name="cam_image_topic" default="/usb_cam/image_raw" />
+    <arg name="cam_info_topic" default="/usb_cam/camera_info" />    
+    <arg name="output_frame" default="/usb_cam" />
     <arg name="frame_rate" default="30" />
 
 
@@ -25,8 +25,8 @@
 
     
     <node name="marker_on_image" pkg="marker_viz" type="marker_on_image">
-        <remap from="image_in" to="/image_raw" />
-        <remap from="image_out" to="/marker_image" />
+        <remap from="image_in" to="/usb_cam/image_raw" />
+        <remap from="image_out" to="/usb_cam/marker_image" />
         <remap from="marker" to="/ar_pose_marker" />
         <param name="marker_size" value="$(arg marker_size)" />
     </node>

@@ -29,12 +29,12 @@ class MarkerFollower:
         self.pan_home = 1500
         self.tilt_home = 1500
         
-        # blocks until services are available
+        # blocks until services are available (from maestro driver)
         rospy.wait_for_service('set_speed')
         self.set_speed(20, 20)
 
         rospy.wait_for_service('set_accel')
-        self.set_accel(7, 10)
+        self.set_accel(10, 10)
 
         self.angle_setter = actionlib.SimpleActionClient('set_angle', set_anglesAction)
         self.angle_setter.wait_for_server()
@@ -104,7 +104,7 @@ class MarkerFollower:
         # rospy.loginfo('Pantilt got message')
         if len(marker_msg.markers) > 0:
             position = marker_msg.markers[0].pose.pose.position
-            pan_err = np.arctan2(position.x, position.z)
+            pan_err = -np.arctan2(position.x, position.z)
             tilt_err = np.arctan2(position.y, position.z)
 
             # rospy.loginfo('Pantilt got marker!')

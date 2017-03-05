@@ -94,7 +94,6 @@ class MaestroDriver:
 	# TODO: refactor this
 	
 	def setTarget(self, servo, position):
-		# 
 		position = position * 4
 		poslo = (position & 0x7f)
 		poshi = (position >> 7) & 0x7f
