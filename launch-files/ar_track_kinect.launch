@@ -35,7 +35,7 @@
         <remap from="marker" to="/ar_pose_marker" />
     </node>
 
-    
+    <!--
     <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
-    
+    -->
 </launch>
