@@ -31,10 +31,10 @@ class MarkerFollower:
         
         # blocks until services are available (from maestro driver)
         rospy.wait_for_service('set_speed')
-        self.set_speed(20, 20)
+        self.set_speed(0, 0)
 
         rospy.wait_for_service('set_accel')
-        self.set_accel(10, 10)
+        self.set_accel(0, 0)
 
         self.angle_setter = actionlib.SimpleActionClient('set_angle', set_anglesAction)
         self.angle_setter.wait_for_server()
@@ -48,6 +48,7 @@ class MarkerFollower:
         self.set_target(self.pan_home, self.tilt_home)
         self.pan = self.pan_home
         self.tilt = self.tilt_home
+        self.set_target(self.pan, self.tilt)
         
 
     def motion(self, pan_change, tilt_change):
@@ -110,7 +111,7 @@ class MarkerFollower:
             # rospy.loginfo('Pantilt got marker!')
             rospy.loginfo('pan %.f, tilt %.f' % (np.rad2deg(pan_err), np.rad2deg(tilt_err)))
 
-            us_per_deg = 50
+            us_per_deg = 100  # FIXME actually us_per_rad...
             self.motion(-pan_err*us_per_deg, -tilt_err*us_per_deg)
     
 
