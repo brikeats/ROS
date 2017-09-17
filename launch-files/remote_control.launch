@@ -1,0 +1,13 @@
+
+<launch>
+
+  <arg name="fudge_factor" default="100" />
+	
+	<node pkg="differential_drive" type="virtual_joystick.py" name="joystick">
+		<param name="x_min" value="-100" />
+		<param name="x_max" value="100" />
+		<param name="r_min" value="-600.0" />
+		<param name="r_max" value="600.0" />
+	</node>
+
+</launch>
