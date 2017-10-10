@@ -2,8 +2,8 @@
 
 
 // the program will send pings cyclically to the pins listed here
-#define NUM_PINS 6
-int pingPins[NUM_PINS] = {6, 7, 8, 9, 10, 12};
+#define NUM_PINS 4
+int pingPins[NUM_PINS] = {6, 7, 8, 9};
 float max_range = 400;  // cm
 
 //unsigned long max_wait = 29 * max_range;  // us

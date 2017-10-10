@@ -21,6 +21,15 @@ class UltrasonicArrayController:
 
     def __init__(self):
 
+        self.pin_to_tf = {6: 'front_center_ultrasonic_sensor',
+                          7: 'front_right_ultrasonic_sensor',
+                          8: 'front_left_ultrasonic_sensor',
+                          9: 'rear_center_ultrasonic_sensor'}
+
+        self.pin_to_topic = {pin: sensor.replace('ultrasonic_sensor', 'range') for pin, sensor in self.pin_to_tf.items()}
+
+        rospy.loginfo('self.pin_to_topic', self.pin_to_topic)
+
         try:
             port = ports[0]
         except IndexError:
@@ -30,11 +39,11 @@ class UltrasonicArrayController:
         rospy.loginfo('connected to: ' + ser.portstr)
 
         rospy.init_node('ultrasonic_array')
-        pub = rospy.Publisher('ultrasonic_measurements', Range, queue_size=10)
+        self.pin_to_publisher = {pin: rospy.Publisher(topic, Range, queue_size=10) for pin, topic in self.pin_to_topic.items()}
+
         range_msg = Range()
         range_msg.radiation_type = Range.ULTRASOUND
         rate = rospy.Rate(10) # 10hz
-
         # http://www.robotshop.com/media/files/pdf/datasheet-sen136b5b.pdf
         range_msg.field_of_view = 30. * (3.1416 / 180)
         range_msg.min_range = 0.02
@@ -59,11 +68,16 @@ class UltrasonicArrayController:
                         except:
                             continue
 
-                        # rospy.loginfo('pin %i: %i cm' % (pin_num, range_cm))
-                        if pin_num == 12:
+                        try:
+                            tf = self.pin_to_tf[pin_num]
+                            rospy.loginfo('tf %s: %i cm' % (tf, range_cm))
+                            range_msg.header.frame_id = tf
                             range_msg.range = float(range_cm) / 100
+                            pub = self.pin_to_publisher[pin_num]
                             pub.publish(range_msg)
                             rate.sleep()
+                        except KeyError:
+                            pass
 
                 except serial.serialutil.SerialException:
                     pass
