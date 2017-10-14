@@ -1,0 +1,59 @@
+#! /usr/bin/env python
+import roslib
+roslib.load_manifest('adam_driver')
+import rospy
+import tf
+from tf.transformations import euler_from_quaternion
+from sensor_msgs.msg import Range
+import numpy as np
+
+
+class AdamDriver:
+
+    def __init__(self):
+
+        rospy.init_node('adam_driver', anonymous=False)
+        self.listener = tf.TransformListener()
+
+        # get parameters
+        # motor_num = rospy.get_param('~motor_num', 1)
+        
+        # listen for commands
+        fc_sub = rospy.Subscriber('/front_center_range', Range, self.on_range_measurement)
+        fr_sub = rospy.Subscriber('/front_right_range', Range, self.on_range_measurement)
+        fl_sub = rospy.Subscriber('/front_left_range', Range, self.on_range_measurement)
+        rc_sub = rospy.Subscriber('/rear_center_range', Range, self.on_range_measurement)
+        
+        # Find the static rotation angles for all the sensors
+        sensor_frames = ['front_right_ultrasonic_sensor', 'front_left_ultrasonic_sensor', 'front_center_ultrasonic_sensor', 'rear_center_ultrasonic_sensor']
+        self.frame_to_sensor_direction = {}
+        for frame in sensor_frames:
+            now = rospy.Time(0)
+            _, quaternion = self.listener.lookupTransform(frame, "base_link", now)
+            theta_z = euler_from_quaternion(quaternion)[2]
+            nx = np.sin(theta_z)
+            ny = np.cos(theta_z)
+            self.frame_to_sensor_direction[frame] = nx, ny
+            
+        self.latest_vectors = {frame: (0, 0) for frame in sensor_frames}
+
+        rospy.on_shutdown(self.shutdown)
+        rospy.spin()
+
+
+    def on_range_measurement(self, range_msg):
+        frame = range_msg.header.frame_id
+        r = range_msg.range
+        nx, ny = self.frame_to_sensor_direction[frame]
+        x, y = r * nx, r * ny
+        self.latest_vectors[frame] = x, y
+        print(self.latest_vectors)
+        
+
+    def shutdown(self):
+        pass
+
+
+if __name__ == '__main__':
+
+    adam_driver = AdamDriver()
