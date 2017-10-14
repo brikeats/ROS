@@ -188,12 +188,42 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Range
       Color: 255; 255; 255
-      Enabled: false
+      Enabled: true
       Name: Range
       Queue Size: 100
-      Topic: /ultrasonic_measurements
+      Topic: /front_center_range
       Unreliable: false
-      Value: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: Range
+      Queue Size: 100
+      Topic: /front_left_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: Range
+      Queue Size: 100
+      Topic: /front_right_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: Range
+      Queue Size: 100
+      Topic: /rear_center_range
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
