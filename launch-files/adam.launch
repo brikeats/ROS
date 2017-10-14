@@ -1,0 +1,17 @@
+
+ <launch>
+
+    <!-- Launch the description (link frames)  -->
+    <include file="$(find adam_description)/launch/joint_states.launch"/>
+
+    <!-- Start the ultrasonic array -->
+    <node name="ultrasonic_array" pkg="ultrasonic_array" type="ultrasonic_array"/>
+
+    <!-- Enable the motors -->
+    <include file="$(find motor_driver)/launch/motors.launch"/>
+
+    <!-- The driver (sensor msgs -> motor commands) -->
+    <node name="adam_driver" pkg="adam_driver" type="adam_driver"/>
+
+
+ </launch>

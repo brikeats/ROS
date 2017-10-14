@@ -1,0 +1,20 @@
+  
+ <launch>
+
+    <!-- start the kinect -->
+    <include file="$(find openni_launch)/launch/openni.launch">
+        <arg name="depth_registration" default="true" />
+    </include>
+    
+    <!-- online slam -->
+    <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+
+    </include>
+
+    <!--
+    rm ~/.ros/rtabmap.db
+    roslaunch slam.launch
+    rtabmap-databaseViewer ~/.ros/rtabmap.db 
+    -->
+    
+</launch>
