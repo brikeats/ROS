@@ -8,6 +8,20 @@ from sensor_msgs.msg import Range
 import numpy as np
 
 
+def logistic_curve(x, k=1):
+    return 1. / (1 + np.exp(-k*x))
+
+
+class DrivingMode(object):
+    NORMAL = 0
+    TURN_ABOUT = 1
+
+
+class TurnAboutDirection(object):
+    CLOCKWISE = 0
+    COUNTERCLOCKWISE = 1
+
+
 class AdamDriver:
 
     def __init__(self):
@@ -33,9 +47,22 @@ class AdamDriver:
             theta_z = euler_from_quaternion(quaternion)[2]
             nx = np.sin(theta_z)
             ny = np.cos(theta_z)
-            self.frame_to_sensor_direction[frame] = nx, ny
+            self.frame_to_sensor_direction[frame] = np.array([nx, ny])
             
-        self.latest_vectors = {frame: (0, 0) for frame in sensor_frames}
+
+        # Parameters
+        self.turniness = 2  # how apt to turn when in normal mode
+        self.turn_about_thresh = 0.05  # at this percent forward effort, switch to turn-about mode
+        self.turn_about_speed = 0.5  # how fast to move in turn-about mode
+        self.mode_to_alpha = {DrivingMode.NORMAL: 0, 
+                              DrivingMode.TURN_ABOUT:0.5}  # how much to filter raw motor efforts
+            
+        # Initialize attributes
+        self.latest_vectors = {frame: np.array([0, 0]) for frame in sensor_frames}
+        self.driving_mode = DrivingMode.NORMAL
+        self.turn_about_direction = TurnAboutDirection.CLOCKWISE
+        self.uL_ewma = 0
+        self.uR_ewma = 0
 
         rospy.on_shutdown(self.shutdown)
         rospy.spin()
@@ -44,11 +71,105 @@ class AdamDriver:
     def on_range_measurement(self, range_msg):
         frame = range_msg.header.frame_id
         r = range_msg.range
-        nx, ny = self.frame_to_sensor_direction[frame]
-        x, y = r * nx, r * ny
-        self.latest_vectors[frame] = x, y
-        print(self.latest_vectors)
+        n_hat = self.frame_to_sensor_direction[frame]
+        range_vector = r * n_hat
+        self.latest_vectors[frame] = range_vector
+        self.update_effort()
         
+
+    def has_all_measurements(self):
+        return any([any(val==np.array([0, 0])) for val in self.latest_vectors.values()])
+
+
+    def update_effort(self):
+        if not self.has_all_measurements():
+            return
+
+        forward_forces = []
+        for frame, (x, y) in self.latest_vectors.items():
+            r = np.sqrt(x*x + y*y)
+            force_r = self.reading_to_force(r)
+            n_hat = self.frame_to_sensor_direction[frame]
+            force_vec = force_r * n_hat
+            if n_hat[1] >= 0:
+                forward_forces.append(force_vec)
+        forward_forces = np.array(forward_forces)
+        net_force = self.compute_net_force(forward_forces)
+        uL, uR = self.force_to_efforts(net_force)
+        print(uL, uR)
+
+
+    def filter_efforts(self, uL, uR):
+        if uL > 1.:
+            uL = 1.
+        if uL < -1.:
+            uL = -1.
+        if uR > 1.:
+            uR = 1.
+        if uR < -1.:
+            uR = -1.
+        alpha = self.mode_to_alpha[self.driving_mode]
+        self.uL_ewma = alpha * uL + (1-alpha) * self.uL_ewma
+        self.uR_ewma = alpha * uR + (1-alpha) * self.uR_ewma
+
+
+    def force_to_efforts(self, net_force):
+        if self.driving_mode == DrivingMode.NORMAL:
+            [omega, v] = net_force
+            uR = (v - omega)
+            uL = (v + omega)
+        else:  # if self.driving_mode == DrivingMode.TURN_ABOUT
+            if self.turn_about_direction == TurnAboutDirection.CLOCKWISE:
+                uL, uR = self.turn_about_speed, -self.turn_about_speed
+            else:
+                uL, uR = -self.turn_about_speed, self.turn_about_speed
+        return uL, uR
+
+
+    def compute_net_force(self, forward_forces):
+        if forward_forces[:,1].sum() < self.turn_about_thresh:
+            self.driving_mode = DrivingMode.TURN_ABOUT
+            if forward_forces[:,0].sum() > 0:
+                self.turn_about_direction = TurnAboutDirection.CLOCKWISE
+            else:
+                self.turn_about_direction = TurnAboutDirection.COUNTERCLOCKWISE
+            return None  
+        else:
+            self.driving_mode = DrivingMode.NORMAL
+            net_force = forward_forces.mean(axis=0)
+            net_force[0] *= self.turniness
+            return net_force
+
+
+    def reading_to_force(self, d, stopping_distance=.20, steepness=5):
+        """Convert a range reading to a 'force' between -1 and 1.
+
+        Args:
+            d (float): distance reading
+            stopping_distance (float): at this range reading the force is zero
+            steepness (float): how quickly the effort changes as a function 
+                of distance
+
+        Using a high value of steepness will cause the robot to drive until an obstacle is close, then stop abruptly. Lower values of the steepness will cause robot to steer smoothly away from walls until it gets stuck in a corner.
+        """
+        force = 2*(logistic_curve(d-stopping_distance, steepness)-0.5)
+        return force
+
+
+    # def control_effort(readings, lambda_=10, omega0=10, scale=10):
+    #     net_force = np.array([0., 0.])
+    #     for phi, reading in readings.iteritems():
+    #         force = reading_to_force(reading, stopping_distance=30, steepness=0.1)
+    #         net_force += force * np.array([np.cos(phi), np.sin(phi)])
+    #     net_force *= float(scale)
+
+    #     # speed in robot frame
+    #     v = net_force[0]
+    #     omega = net_force[1] + omega0/(np.sqrt(np.sum(net_force**2)))
+    #     uR = (v + lambda_*omega)/(lambda_+1)
+    #     uL = (v - lambda_*omega)/(lambda_+1)
+    #     return uL, uR
+
 
     def shutdown(self):
         pass
