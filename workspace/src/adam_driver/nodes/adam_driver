@@ -5,6 +5,7 @@ import rospy
 import tf
 from tf.transformations import euler_from_quaternion
 from sensor_msgs.msg import Range
+from std_msgs.msg import Float32
 import numpy as np
 
 
@@ -31,27 +32,22 @@ class AdamDriver:
 
         # get parameters
         # motor_num = rospy.get_param('~motor_num', 1)
-        
-        # listen for commands
-        fc_sub = rospy.Subscriber('/front_center_range', Range, self.on_range_measurement)
-        fr_sub = rospy.Subscriber('/front_right_range', Range, self.on_range_measurement)
-        fl_sub = rospy.Subscriber('/front_left_range', Range, self.on_range_measurement)
-        rc_sub = rospy.Subscriber('/rear_center_range', Range, self.on_range_measurement)
-        
+
         # Find the static rotation angles for all the sensors
         sensor_frames = ['front_right_ultrasonic_sensor', 'front_left_ultrasonic_sensor', 'front_center_ultrasonic_sensor', 'rear_center_ultrasonic_sensor']
         self.frame_to_sensor_direction = {}
         for frame in sensor_frames:
             now = rospy.Time(0)
+            self.listener.waitForTransform(frame, "base_link", now, rospy.Duration(4.0))
             _, quaternion = self.listener.lookupTransform(frame, "base_link", now)
             theta_z = euler_from_quaternion(quaternion)[2]
-            nx = np.sin(theta_z)
-            ny = np.cos(theta_z)
+            nx = np.cos(theta_z)
+            ny = -np.sin(theta_z)
             self.frame_to_sensor_direction[frame] = np.array([nx, ny])
-            
-
+        
         # Parameters
-        self.turniness = 2  # how apt to turn when in normal mode
+        self.max_speed = 80.
+        self.turniness = 2.  # how apt to turn when in normal mode
         self.turn_about_thresh = 0.05  # at this percent forward effort, switch to turn-about mode
         self.turn_about_speed = 0.5  # how fast to move in turn-about mode
         self.mode_to_alpha = {DrivingMode.NORMAL: 0, 
@@ -64,28 +60,55 @@ class AdamDriver:
         self.uL_ewma = 0
         self.uR_ewma = 0
 
+        
+        # listen for commands
+        fc_sub = rospy.Subscriber('/front_center_range', Range, self.on_range_measurement)
+        fr_sub = rospy.Subscriber('/front_right_range', Range, self.on_range_measurement)
+        fl_sub = rospy.Subscriber('/front_left_range', Range, self.on_range_measurement)
+        rc_sub = rospy.Subscriber('/rear_center_range', Range, self.on_range_measurement)
+
+        # publish motor commands
+        self.left_motor_publisher = rospy.Publisher('left_motor_effort', Float32, queue_size=10)
+        self.right_motor_publisher = rospy.Publisher('right_motor_effort', Float32, queue_size=10)
+
         rospy.on_shutdown(self.shutdown)
         rospy.spin()
 
 
+    def publish_motor_commands(self, uL, uR):
+        uL, uR = uL * self.max_speed, uR * self.max_speed
+        # rospy.loginfo('setting motor speed to %i, %i' % (uL, uR))
+        try:
+            self.left_motor_publisher.publish(uL)
+            self.right_motor_publisher.publish(uR)
+        except AttributeError:
+            rospy.loginfo('Adamdriver has no publishers!!!')
+
+        
     def on_range_measurement(self, range_msg):
         frame = range_msg.header.frame_id
         r = range_msg.range
-        n_hat = self.frame_to_sensor_direction[frame]
-        range_vector = r * n_hat
-        self.latest_vectors[frame] = range_vector
-        self.update_effort()
-        
+        try:
+            n_hat = self.frame_to_sensor_direction[frame]
+            range_vector = r * n_hat
+            self.latest_vectors[frame] = range_vector
+            self.update_effort()
+        except AttributeError:
+            rospy.loginfo('Adamdriver has no self.frame_to_sensor_direction!!!')
+
 
     def has_all_measurements(self):
-        return any([any(val==np.array([0, 0])) for val in self.latest_vectors.values()])
+        return True
+        # return any([any(val==np.array([0, 0])) for val in self.latest_vectors.values()])
 
 
     def update_effort(self):
         if not self.has_all_measurements():
+            rospy.loginfo('waiting for all measurements')
             return
 
         forward_forces = []
+        
         for frame, (x, y) in self.latest_vectors.items():
             r = np.sqrt(x*x + y*y)
             force_r = self.reading_to_force(r)
@@ -93,21 +116,26 @@ class AdamDriver:
             force_vec = force_r * n_hat
             if n_hat[1] >= 0:
                 forward_forces.append(force_vec)
+            
         forward_forces = np.array(forward_forces)
         net_force = self.compute_net_force(forward_forces)
+        # rospy.loginfo('forward_forces %s' % forward_forces)
+        rospy.loginfo('net_force %s' % net_force)
         uL, uR = self.force_to_efforts(net_force)
-        print(uL, uR)
+        rospy.loginfo('uL, uR %f, %f' % (uL, uR))
+        # self.publish_motor_commands(self.uL_ewma, self.uL_ewma)
+        self.publish_motor_commands(uL, uR)
 
 
     def filter_efforts(self, uL, uR):
-        if uL > 1.:
-            uL = 1.
-        if uL < -1.:
-            uL = -1.
-        if uR > 1.:
-            uR = 1.
-        if uR < -1.:
-            uR = -1.
+        if uL > self.max_speed:
+            uL = self.max_speed
+        if uL < -self.max_speed:
+            uL = -self.max_speed
+        if uR > self.max_speed:
+            uR = self.max_speed
+        if uR < -self.max_speed:
+            uR = -self.max_speed
         alpha = self.mode_to_alpha[self.driving_mode]
         self.uL_ewma = alpha * uL + (1-alpha) * self.uL_ewma
         self.uR_ewma = alpha * uR + (1-alpha) * self.uR_ewma

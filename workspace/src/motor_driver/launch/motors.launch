@@ -1,0 +1,24 @@
+<launch>
+
+	<!--
+	With my current setup, left is motor 1 and backwards. right is motor 2 and forward
+	-->
+	
+	<arg name="left_motor_num" default="1" />
+	<arg name="left_backwards" default="True" />
+	<arg name="right_motor_num" default="2" />
+	<arg name="right_backwards" default="False" />
+	
+	<node pkg="motor_driver" type="motor_driver" name="left_motor_driver">
+		<param name="motor_num" value="$(arg left_motor_num)" />
+		<param name="backwards" value="$(arg left_backwards)" />
+		<remap from="motor_effort" to="left_motor_effort"/>
+	</node>	
+
+	<node pkg="motor_driver" type="motor_driver" name="right_motor_driver">
+		<param name="motor_num" value="$(arg right_motor_num)" />
+		<param name="backwards" value="$(arg right_backwards)" />
+		<remap from="motor_effort" to="right_motor_effort"/>
+	</node>	
+
+</launch>

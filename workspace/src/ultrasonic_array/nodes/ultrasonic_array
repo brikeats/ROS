@@ -57,7 +57,7 @@ class UltrasonicArrayController:
 
                     # parse the line
                     if line:
-                        rospy.loginfo(line)
+                        # rospy.loginfo(line)
                         range_msg.header.stamp = rospy.Time.now()
 
 
