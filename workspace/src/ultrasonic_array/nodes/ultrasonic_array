@@ -70,7 +70,7 @@ class UltrasonicArrayController:
 
                         try:
                             tf = self.pin_to_tf[pin_num]
-                            rospy.loginfo('tf %s: %i cm' % (tf, range_cm))
+                            #rospy.loginfo('tf %s: %i cm' % (tf, range_cm))
                             range_msg.header.frame_id = tf
                             range_msg.range = float(range_cm) / 100
                             pub = self.pin_to_publisher[pin_num]

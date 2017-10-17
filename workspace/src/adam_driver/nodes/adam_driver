@@ -34,7 +34,7 @@ class AdamDriver:
         # motor_num = rospy.get_param('~motor_num', 1)
 
         # Find the static rotation angles for all the sensors
-        sensor_frames = ['front_right_ultrasonic_sensor', 'front_left_ultrasonic_sensor', 'front_center_ultrasonic_sensor', 'rear_center_ultrasonic_sensor']
+        sensor_frames = ['front_right_ultrasonic_sensor', 'front_left_ultrasonic_sensor', 'front_center_ultrasonic_sensor']
         self.frame_to_sensor_direction = {}
         for frame in sensor_frames:
             now = rospy.Time(0)
@@ -45,12 +45,15 @@ class AdamDriver:
             ny = -np.sin(theta_z)
             self.frame_to_sensor_direction[frame] = np.array([nx, ny])
         
+
         # Parameters
-        self.max_speed = 80.
-        self.turniness = 2.  # how apt to turn when in normal mode
-        self.turn_about_thresh = 0.05  # at this percent forward effort, switch to turn-about mode
-        self.turn_about_speed = 0.5  # how fast to move in turn-about mode
-        self.mode_to_alpha = {DrivingMode.NORMAL: 0, 
+        self.stopping_distance = 0.2
+        self.steepness = 3
+        self.max_speed = 100.
+        self.turniness = 5.  # how apt to turn when in normal mode
+        self.turn_about_thresh = 0.55  # at this percent forward effort, switch to turn-about mode
+        self.turn_about_speed = 0.6  # how fast to move in turn-about mode
+        self.mode_to_alpha = {DrivingMode.NORMAL: 0.5, 
                               DrivingMode.TURN_ABOUT:0.5}  # how much to filter raw motor efforts
             
         # Initialize attributes
@@ -65,7 +68,7 @@ class AdamDriver:
         fc_sub = rospy.Subscriber('/front_center_range', Range, self.on_range_measurement)
         fr_sub = rospy.Subscriber('/front_right_range', Range, self.on_range_measurement)
         fl_sub = rospy.Subscriber('/front_left_range', Range, self.on_range_measurement)
-        rc_sub = rospy.Subscriber('/rear_center_range', Range, self.on_range_measurement)
+        # rc_sub = rospy.Subscriber('/rear_center_range', Range, self.on_range_measurement)
 
         # publish motor commands
         self.left_motor_publisher = rospy.Publisher('left_motor_effort', Float32, queue_size=10)
@@ -77,7 +80,6 @@ class AdamDriver:
 
     def publish_motor_commands(self, uL, uR):
         uL, uR = uL * self.max_speed, uR * self.max_speed
-        # rospy.loginfo('setting motor speed to %i, %i' % (uL, uR))
         try:
             self.left_motor_publisher.publish(uL)
             self.right_motor_publisher.publish(uR)
@@ -119,12 +121,11 @@ class AdamDriver:
             
         forward_forces = np.array(forward_forces)
         net_force = self.compute_net_force(forward_forces)
-        # rospy.loginfo('forward_forces %s' % forward_forces)
-        rospy.loginfo('net_force %s' % net_force)
         uL, uR = self.force_to_efforts(net_force)
-        rospy.loginfo('uL, uR %f, %f' % (uL, uR))
-        # self.publish_motor_commands(self.uL_ewma, self.uL_ewma)
-        self.publish_motor_commands(uL, uR)
+        rospy.loginfo('net_force %s' % str(net_force))
+        self.filter_efforts(uL, uR)
+        self.publish_motor_commands(self.uL_ewma, self.uR_ewma)
+        # self.publish_motor_commands(uL, uR)
 
 
     def filter_efforts(self, uL, uR):
@@ -147,6 +148,7 @@ class AdamDriver:
             uR = (v - omega)
             uL = (v + omega)
         else:  # if self.driving_mode == DrivingMode.TURN_ABOUT
+            rospy.loginfo('Turning about!')
             if self.turn_about_direction == TurnAboutDirection.CLOCKWISE:
                 uL, uR = self.turn_about_speed, -self.turn_about_speed
             else:
@@ -155,6 +157,8 @@ class AdamDriver:
 
 
     def compute_net_force(self, forward_forces):
+        rospy.loginfo('forward force: %f' % forward_forces[:,1].sum())
+        # FIXME: this isn't normalized correctly
         if forward_forces[:,1].sum() < self.turn_about_thresh:
             self.driving_mode = DrivingMode.TURN_ABOUT
             if forward_forces[:,0].sum() > 0:
@@ -180,7 +184,7 @@ class AdamDriver:
 
         Using a high value of steepness will cause the robot to drive until an obstacle is close, then stop abruptly. Lower values of the steepness will cause robot to steer smoothly away from walls until it gets stuck in a corner.
         """
-        force = 2*(logistic_curve(d-stopping_distance, steepness)-0.5)
+        force = 2*(logistic_curve(d-self.stopping_distance, self.steepness)-0.5)
         return force
 
 
