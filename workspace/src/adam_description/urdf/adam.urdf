@@ -310,11 +310,24 @@
     </collision>
   </link>
 
-  <joint name="kinet_to_base" type="fixed">
+  <joint name="kinect_to_base" type="fixed">
     <axis xyz="0 0 0" rpy="0 0 0" />
     <parent link="base_link"/>
     <child link="kinect"/>
     <origin xyz="0 0 0.2" rpy="0 0 0"/>
+  </joint> 
+
+  <link name="kinect_sensor">
+    <geometry>
+      <box size="0.01 0.01 0.01"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </geometry>
+  </link> 
+
+  <joint name="kinect_sensor_to_kinect" type="fixed">
+    <parent link="kinect"/>
+    <child link="kinect_sensor"/>
+    <origin xyz="0 0 0" rpy="1.57075 3.14159 0"/>
   </joint> 
 
 </robot>
