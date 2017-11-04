@@ -294,4 +294,27 @@
   <xacro:ultrasonic_sensor prefix="rear" suffix="center" x="0.0" y="-0.1" z="${0.5*channel_width}" thetax="0" thetaz="${pi}"/>
   
 
+  <link name="kinect">
+    <visual>
+      <geometry>
+        <mesh filename="package://adam_description/meshes/kinect.dae"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://adam_description/meshes/kinect.dae"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="kinet_to_base" type="fixed">
+    <axis xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="kinect"/>
+    <origin xyz="0 0 0.2" rpy="0 0 0"/>
+  </joint> 
+
 </robot>
