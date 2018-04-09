@@ -1,17 +1,16 @@
+<launch>
 
- <launch>
+  <arg name="model" default="$(find adam_description)/urdf/adam.urdf"/>
+  
+  <!-- robot description/frames -->
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 
-    <!-- Launch the description (link frames)  -->
-    <include file="$(find adam_description)/launch/joint_states.launch"/>
+  <!-- kinect -->
+  <include file="$(find openni_launch)/launch/openni.launch"/>
 
-    <!-- Start the ultrasonic array -->
-    <node name="ultrasonic_array" pkg="ultrasonic_array" type="ultrasonic_array"/>
-
-    <!-- Enable the motors -->
-    <include file="$(find motor_driver)/launch/motors.launch"/>
-
-    <!-- The driver (sensor msgs -> motor commands) -->
-    <node name="adam_driver" pkg="adam_driver" type="adam_driver"/>
-
-
- </launch>
+  <!-- ultrasonic sensors -->
+  <node name="ultrasonic_array" pkg="ultrasonic_array" type="ultrasonic_array" />
+  
+</launch>

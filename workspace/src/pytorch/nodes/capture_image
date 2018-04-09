@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import roslib
+roslib.load_manifest('pytorch')
+import sys
+import rospy
+import cv2
+import numpy as np
+
+from std_msgs.msg import String
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
+
+
+
+
+class ImageCapturer:
+
+    def __init__(self):
+
+        self.bridge = CvBridge()
+        in_topic = '/image_in'
+        self.image_sub = rospy.Subscriber(in_topic, Image, self.on_image)
+
+
+    def on_image(self, data):
+
+        # decode bgr image into a numpy array
+        try:
+            image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            rospy.loginfo('Got frame of shape %s' % str(image.shape))
+        except CvBridgeError as e:
+            print(e)
+            return
+
+        # # encode transformed bgr image into ROS message
+        # try:
+        #     self.image_pub.publish(self.bridge.cv2_to_imgmsg(out_image, "bgr8"))
+        # except CvBridgeError as e:
+        #     print(e)
+
+
+
+def main(args):
+    rospy.init_node('image_capturer')
+    image_capturer = ImageCapturer()
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print("Shutting down")
+
+
+if __name__ == '__main__':
+    main(sys.argv)
