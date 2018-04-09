@@ -7,6 +7,7 @@ import sys
 import rospy
 import cv2
 import numpy as np
+import torch
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
@@ -28,8 +29,11 @@ class ImageCapturer:
 
         # decode bgr image into a numpy array
         try:
-            image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            rospy.loginfo('Got frame of shape %s' % str(image.shape))
+            image = self.bridge.imgmsg_to_cv2(data, "bgr8")  # bgr8 or mono8
+            image = np.flip(image, 2).transpose(2,0,1)  # bgr to rgb, put channels first
+            tensor = torch.from_numpy(image.copy()).unsqueeze(0)
+            rospy.loginfo('Frame tensor of size %s' % str(tensor.size()))
+            
         except CvBridgeError as e:
             print(e)
             return

@@ -1,0 +1,20 @@
+<launch>
+
+  <!-- Launch the kinect and show the rgb feed, and the colorize disparity image.
+       My kinect is mounted upside-down, so I added nodes to correct the orientation.
+       TODO: make flipping optional with the flip_ud/flip_lr arguments
+  -->  
+  
+
+  <!-- start the kinect -->
+  <include file="$(find openni_launch)/launch/openni.launch"/>
+  
+  <node pkg="pytorch" type="capture_image" name="capture_image" respawn="false">
+    <remap from="image_in" to="/camera/rgb/image_mono" />
+  </node>
+
+  <!-- 
+  <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
+-->
+
+</launch>
