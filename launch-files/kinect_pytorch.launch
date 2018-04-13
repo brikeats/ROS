@@ -10,7 +10,7 @@
   <include file="$(find openni_launch)/launch/openni.launch"/>
   
   <node pkg="pytorch" type="capture_image" name="capture_image" respawn="false">
-    <remap from="image_in" to="/camera/rgb/image_mono" />
+    <remap from="image_in" to="/camera/rgb/image_raw" />
   </node>
 
   <!-- 

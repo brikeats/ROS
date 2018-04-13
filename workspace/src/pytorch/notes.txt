@@ -1,0 +1,3 @@
+kinect RGB frame '/camera/rgb/image_raw' is of shape (480, 640, 3), uint8
+kinect depth frame '/camera/depth/image_raw' is of shape (480, 640), uint8
+kinect depth frame '/camera/rgb/image_mono' is of shape (480, 640), uint8

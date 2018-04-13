@@ -12,40 +12,61 @@ from torchvision.transforms.functional import to_tensor
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
+
 from cv_bridge import CvBridge, CvBridgeError
-
-
+from blurnet import BlurNet
+from torch.autograd import Variable
+import torchvision.transforms.functional as F
+from scipy.ndimage.interpolation import zoom
 
 
 class ImageCapturer:
 
     def __init__(self):
 
+        self.model = BlurNet(input_chans=3, kern_sz=7)
         self.bridge = CvBridge()
+        self.num_frames = 0
+        self.publish_frequency = 5
+        self.image_zoom = 0.25
+
         in_topic = '/image_in'
         self.image_sub = rospy.Subscriber(in_topic, Image, self.on_image)
 
+        out_topic = '/image_out'
+        self.image_pub = rospy.Publisher(out_topic, Image, queue_size=5)
 
-    def on_image(self, data):
 
-        # decode bgr image into a numpy array
+    def image_msg_to_tensor(self, image_msg):
+        """Preprocess data for neural net"""
         try:
-            image = self.bridge.imgmsg_to_cv2(data, "bgr8")  # bgr8 or mono8
-            image = np.flip(image, 2)  # bgr to rgb
-            tensor = to_tensor(image.copy()).unsqueeze(0)
-            # rospy.loginfo('Frame tensor of size %s' % str(tensor.size()))
-            rospy.loginfo('Frame mean %.2f' % torch.mean(tensor))
-            
+            bgr_im = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")  # bgr8 or mono8
+            rgb_im = np.flip(bgr_im, 2)
+            rgb_im = zoom(rgb_im, (self.image_zoom, self.image_zoom, 1), order=1)
+            # rospy.loginfo('%s, %s' % (str(rgb_im.dtype), str(rgb_im.shape)))
+            tensor = to_tensor(rgb_im.copy()).unsqueeze(0)
+            return tensor
         except CvBridgeError as e:
             print(e)
-            return
 
-        # # encode transformed bgr image into ROS message
-        # try:
-        #     self.image_pub.publish(self.bridge.cv2_to_imgmsg(out_image, "bgr8"))
-        # except CvBridgeError as e:
-        #     print(e)
+    def tensor_to_image_msg(self, tensor):
+        rgb_im = np.asarray(F.to_pil_image(tensor.squeeze()))
+        brg_im = np.flip(rgb_im, 2)
+        try:
+            return self.bridge.cv2_to_imgmsg(brg_im, "bgr8")
+        except CvBridgeError as e:
+            print(e)
 
+    def on_image(self, im_msg):
+        # decode bgr image into a numpy array
+        self.num_frames += 1
+        if self.num_frames % self.publish_frequency == 0:
+            im_tensor = self.image_msg_to_tensor(im_msg)
+            if im_tensor is not None:
+                blurred_tensor = self.model(Variable(im_tensor)).data
+                blurred_im_msg = self.tensor_to_image_msg(blurred_tensor)
+                if blurred_im_msg is not None:
+                    self.image_pub.publish(blurred_im_msg)
 
 
 def main(args):
