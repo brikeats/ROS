@@ -1,20 +1,24 @@
 <launch>
-
-  <!-- Launch the kinect and show the rgb feed, and the colorize disparity image.
-       My kinect is mounted upside-down, so I added nodes to correct the orientation.
-       TODO: make flipping optional with the flip_ud/flip_lr arguments
-  -->  
   
 
   <!-- start the kinect -->
   <include file="$(find openni_launch)/launch/openni.launch"/>
-  
+
+  <!-- Start marker tracking -->
+    <arg name="marker_size" default="7.5" />
+    <arg name="max_new_marker_error" default="0.08" />
+    <arg name="max_track_error" default="0.2" />
+    <arg name="cam_image_topic" default="/camera/rgb/image_raw" />
+    <arg name="cam_info_topic" default="/camera/rgb/camera_info" />    
+    <arg name="output_frame" default="/camera_rgb_optical_frame" />
+    <arg name="frame_rate" default="30" />
+
+    <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg frame_rate)" />
+    
+    
   <node pkg="pytorch" type="capture_image" name="capture_image" respawn="false">
     <remap from="image_in" to="/camera/rgb/image_raw" />
+    <remap from="marker" to="/ar_pose_marker" />
   </node>
-
-  <!-- 
-  <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
--->
 
 </launch>

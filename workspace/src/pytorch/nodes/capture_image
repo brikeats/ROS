@@ -18,6 +18,7 @@ from blurnet import BlurNet
 from torch.autograd import Variable
 import torchvision.transforms.functional as F
 from scipy.ndimage.interpolation import zoom
+from ar_track_alvar_msgs.msg import AlvarMarkers
 
 
 class ImageCapturer:
@@ -30,8 +31,12 @@ class ImageCapturer:
         self.publish_frequency = 5
         self.image_zoom = 0.25
 
-        in_topic = '/image_in'
-        self.image_sub = rospy.Subscriber(in_topic, Image, self.on_image)
+        image_in_topic = '/image_in'
+        # self.image_sub = rospy.Subscriber(in_topic, Image, self.on_image)
+
+        marker_topic = '/marker'
+        rospy.loginfo('capture_image subscribing to %s' % marker_topic)
+        self.marker_sub = rospy.Subscriber(marker_topic, AlvarMarkers, self.on_marker)
 
         out_topic = '/image_out'
         self.image_pub = rospy.Publisher(out_topic, Image, queue_size=5)
@@ -57,16 +62,31 @@ class ImageCapturer:
         except CvBridgeError as e:
             print(e)
 
+    def on_marker(self, marker_msg):
+        rospy.loginfo('capture_image got got marker message!')
+        if len(marker_msg.markers) == 0:
+            self.marker_lost = True
+        else:
+            self.marker_lost = False
+            for marker_num, marker in enumerate(marker_msg.markers):
+                seq = marker_msg.header.seq
+                position = marker.pose.pose.position
+                position = (position.x, position.y, position.z)
+                rospy.loginfo('frame_num %i: position %s' % (seq, str(position)))
+                
+    
     def on_image(self, im_msg):
+        pass
+
         # decode bgr image into a numpy array
-        self.num_frames += 1
-        if self.num_frames % self.publish_frequency == 0:
-            im_tensor = self.image_msg_to_tensor(im_msg)
-            if im_tensor is not None:
-                blurred_tensor = self.model(Variable(im_tensor)).data
-                blurred_im_msg = self.tensor_to_image_msg(blurred_tensor)
-                if blurred_im_msg is not None:
-                    self.image_pub.publish(blurred_im_msg)
+        # self.num_frames += 1
+        # if self.num_frames % self.publish_frequency == 0:
+        #     im_tensor = self.image_msg_to_tensor(im_msg)
+        #     if im_tensor is not None:
+        #         blurred_tensor = self.model(Variable(im_tensor)).data
+        #         blurred_im_msg = self.tensor_to_image_msg(blurred_tensor)
+        #         if blurred_im_msg is not None:
+        #             self.image_pub.publish(blurred_im_msg)
 
 
 def main(args):
