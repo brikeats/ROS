@@ -6,7 +6,7 @@
 
 
     <!-- The AR package does rectification, so can pass raw image frames -->
-    <arg name="marker_size" default="3.2" />
+    <arg name="marker_size" default="7.5" />
     <arg name="max_new_marker_error" default="0.08" />
     <arg name="max_track_error" default="0.2" />
     <arg name="cam_image_topic" default="/camera/rgb/image_raw" />
@@ -27,6 +27,7 @@
     </node>
 
     
+    <!--    
     <node name="servo_driver" pkg="servo_driver" type="maestro_driver"/>
 
     <node name="pan_tilt" pkg="pan_tilt" type="pan_tilt">
@@ -35,7 +36,6 @@
         <remap from="marker" to="/ar_pose_marker" />
     </node>
 
-    <!--
     <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
     -->
 </launch>

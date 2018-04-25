@@ -23,13 +23,17 @@ from scipy.ndimage.interpolation import zoom
 class ImageCapturer:
 
     def __init__(self):
-
-        self.model = BlurNet(input_chans=3, kern_sz=7)
+    
         self.bridge = CvBridge()
         self.num_frames = 0
         self.publish_frequency = 5
         self.image_zoom = 0.25
-
+        self.model = BlurNet(input_chans=3, kern_sz=7)
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.model = self.model.cuda()
+        
+        
         in_topic = '/image_in'
         self.image_sub = rospy.Subscriber(in_topic, Image, self.on_image)
 
@@ -43,13 +47,16 @@ class ImageCapturer:
             bgr_im = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")  # bgr8 or mono8
             rgb_im = np.flip(bgr_im, 2)
             rgb_im = zoom(rgb_im, (self.image_zoom, self.image_zoom, 1), order=1)
-            # rospy.loginfo('%s, %s' % (str(rgb_im.dtype), str(rgb_im.shape)))
             tensor = to_tensor(rgb_im.copy()).unsqueeze(0)
+            if self.cuda:
+                tensor = tensor.cuda()
             return tensor
         except CvBridgeError as e:
             print(e)
 
     def tensor_to_image_msg(self, tensor):
+        if self.cuda:
+            tensor = tensor.cpu()
         rgb_im = np.asarray(F.to_pil_image(tensor.squeeze()))
         brg_im = np.flip(rgb_im, 2)
         try:
