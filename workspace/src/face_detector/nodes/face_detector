@@ -64,7 +64,7 @@ class ImageConverter:
                                                    scaleFactor=1.1,
                                                    minNeighbors=3,
                                                    minSize=(15, 15),
-                                                   flags = cv2.CV_HAAR_SCALE_IMAGE
+                                                   flags = cv2.CASCADE_SCALE_IMAGE
                                                    )
 
         rospy.loginfo('Found %i faces' % len(faces))
