@@ -59,11 +59,12 @@ class ImageConverter:
         small_sz = (int(round(scale*gray.shape[1])), 
                     int(round(scale*gray.shape[0])))
         small_gray = cv2.resize(gray, dsize=small_sz)
+        
         faces = self.face_cascade.detectMultiScale(small_gray,
                                                    scaleFactor=1.1,
                                                    minNeighbors=3,
                                                    minSize=(15, 15),
-                                                   flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+                                                   flags = cv2.CV_HAAR_SCALE_IMAGE
                                                    )
 
         rospy.loginfo('Found %i faces' % len(faces))
